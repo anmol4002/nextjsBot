@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Image from "next/image";
 import moment from "moment";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Toast } from "@/components/Toast";
@@ -48,11 +49,11 @@ interface Message {
   isStreaming?: boolean;
 }
 
-interface ToastType {
+interface Toast {
   message: string;
-  type: "success" | "error" | "info" | "loading"; 
-  icon?: React.ReactNode; 
-  duration?: number; 
+  type: "success" | "error" | "info" | "loading";
+  icon?: React.ReactNode;
+  duration?: number;
 }
 
 // Translation content for different languages
@@ -214,83 +215,47 @@ export default function Chat() {
     }
   };
 
-  // const handleLanguageChange = async (selectedLanguage: string) => {
-  //   setIsLanguageDropdownOpen(false);
 
-  //   // Show loading state with yellow rotating icon
-  //   setToast({
-  //     message:
-  //       selectedLanguage === "auto"
-  //         ? "Switching to auto language detection..."
-  //         : `Switching to ${getLanguageLabel(selectedLanguage)}...`,
-  //     type: "loading", 
-  //     icon: <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />,
-  //   });
-
-  //   try {
-  //     // Update language state - this will trigger the chat reset
-  //     setLanguage(selectedLanguage);
-
-  //     // Wait a bit to ensure the language change is processed
-  //     await new Promise((resolve) => setTimeout(resolve, 300));
-
-  //     // Show success notification
-  //     setToast({
-  //       message:
-  //         selectedLanguage === "auto"
-  //           ? "Auto language detection enabled"
-  //           : `Switched to ${getLanguageLabel(selectedLanguage)}`,
-  //       type: "success",
-  //       duration: 2000, 
-  //     });
-  //   } catch (error) {
-  //     console.error("Language change error:", error);
-  //     setToast({
-  //       message: "Failed to change language. Please try again.",
-  //       type: "error",
-  //       duration: 3000,
-  //     });
-  //   }
-  // };
 
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
-  
+
     // Show loading state with yellow rotating icon
     setToast({
-      message: selectedLanguage === "auto"
-        ? "Switching to auto language detection..."
-        : `Switching to ${getLanguageLabel(selectedLanguage)}...`,
+      message:
+        selectedLanguage === "auto"
+          ? "Switching to auto language detection..."
+          : `Switching to ${getLanguageLabel(selectedLanguage)}...`,
       type: "loading",
-      icon: <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />
-    } as ToastType); // Explicitly type it
-  
+      icon: <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />,
+    } as Toast); // Explicitly type it
+
     try {
       // Update language state - this will trigger the chat reset
       setLanguage(selectedLanguage);
-  
+
       // Wait a bit to ensure the language change is processed
       await new Promise((resolve) => setTimeout(resolve, 300));
-  
+
       // Show success notification
       setToast({
-        message: selectedLanguage === "auto"
-          ? "Auto language detection enabled"
-          : `Switched to ${getLanguageLabel(selectedLanguage)}`,
+        message:
+          selectedLanguage === "auto"
+            ? "Auto language detection enabled"
+            : `Switched to ${getLanguageLabel(selectedLanguage)}`,
         type: "success",
-        duration: 2000
-      } as ToastType);
-  
+        duration: 2000,
+      } as Toast);
     } catch (error) {
       console.error("Language change error:", error);
       setToast({
         message: "Failed to change language. Please try again.",
         type: "error",
-        duration: 3000
-      } as ToastType);
+        duration: 3000,
+      } as Toast);
     }
   };
-  
+
   const toggleLanguageDropdown = () => {
     setIsLanguageDropdownOpen((prev) => !prev);
   };
@@ -313,13 +278,13 @@ export default function Chat() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await handleSubmit(e);
+      await handleSubmit(e,input);
     } catch (err) {
       console.error("Error in onSubmit:", err);
       setToast({
         message: "Failed to send message. Please try again.",
         type: "error",
-      });
+      } as Toast);
     }
   };
 
@@ -554,7 +519,7 @@ export default function Chat() {
                             onClick={handleCloseQR}
                             className="ml-auto w-12 h-12 rounded-full bg-surface-container-highest shadow-sm hover:bg-on-surface/10 transition"
                             size="icon"
-                            variant="outlined"
+                            variant="outline"
                             aria-label="Close QR view"
                           >
                             <X className="size-6 text-on-surface-variant" />
@@ -613,7 +578,7 @@ export default function Chat() {
                               <TooltipTrigger asChild>
                                 <Button
                                   size="icon"
-                                  variant="outlined"
+                                  variant="outline"
                                   aria-label="Maximize"
                                   className="w-12 h-12 rounded-full bg-surface-container-highest shadow-sm hover:bg-on-surface/10 transition"
                                   onClick={handleMaximize}
@@ -631,7 +596,7 @@ export default function Chat() {
                               <TooltipTrigger asChild>
                                 <Button
                                   size="icon"
-                                  variant="outlined"
+                                  variant="outline"
                                   aria-label="Restore"
                                   className="w-12 h-12 rounded-full bg-surface-container-highest shadow-sm hover:bg-on-surface/10 transition"
                                   onClick={handleRestore}
@@ -648,7 +613,7 @@ export default function Chat() {
                             <TooltipTrigger asChild>
                               <Button
                                 size="icon"
-                                variant="outlined"
+                                variant="outline"
                                 aria-label="Reset Chat"
                                 className="w-12 h-12 rounded-full bg-surface-container-highest shadow-sm hover:bg-on-surface/10 transition"
                                 onClick={handleResetChat}
@@ -665,7 +630,7 @@ export default function Chat() {
                               <Button
                                 onClick={toggleChat}
                                 size="icon"
-                                variant="outlined"
+                                variant="outline"
                                 aria-label="Close"
                                 className="w-12 h-12 rounded-full bg-surface-container-highest shadow-sm hover:bg-on-surface/10 transition"
                               >
@@ -699,7 +664,7 @@ export default function Chat() {
                         )}
 
                         <div className="space-y-3 pr-2 ">
-                          {messages.map((message, index) => (
+                          {messages.map((message: Message, index) => (
                             <div
                               key={index}
                               className={`flex ${
@@ -713,6 +678,7 @@ export default function Chat() {
                                   isMaximized ? "max-w-4xl" : "max-w-[85%]"
                                 } w-full`}
                               >
+                                {/* Message header with timestamp */}
                                 <div
                                   className={`flex items-center text-xs text-gray-500 mb-1 ${
                                     message.role === "user" ? "justify-end" : ""
@@ -731,6 +697,8 @@ export default function Chat() {
                                       : ""}
                                   </span>
                                 </div>
+
+                                {/* Message content */}
                                 <div
                                   className={`px-4 py-2 rounded-lg shadow-sm text-sm leading-relaxed border border-gray-200 w-full ${
                                     message.role === "user"
@@ -746,7 +714,7 @@ export default function Chat() {
                                     overflowWrap: "break-word",
                                   }}
                                 >
-                                  {isDepartmentSelectionMessage(
+                                   {isDepartmentSelectionMessage(
                                     message.content
                                   ) ? (
                                     <div>
@@ -820,17 +788,17 @@ export default function Chat() {
                                                 );
                                               }
 
-                                              const getDocumentName = (url) => {
+                                              const getDocumentName = (
+                                                url: string
+                                              ) => {
                                                 try {
                                                   const urlObj = new URL(url);
-                                                  // Get the last part of the path (filename)
                                                   const pathParts =
                                                     urlObj.pathname.split("/");
                                                   const fileName =
                                                     pathParts[
                                                       pathParts.length - 1
                                                     ];
-                                                  // Remove file extension if present
                                                   return fileName.replace(
                                                     /\.[^/.]+$/,
                                                     ""
@@ -846,7 +814,8 @@ export default function Chat() {
                                                 );
                                               const displayName =
                                                 citation?.title ||
-                                                getDocumentName(href);
+                                                getDocumentName(href || "");
+
                                               return (
                                                 <a
                                                   href={href}
@@ -861,25 +830,27 @@ export default function Chat() {
                                                 </a>
                                               );
                                             },
-                                            code: ({
-                                              inline,
-                                              className,
-                                              children,
-                                              ...props
-                                            }) => {
+                                            code: (props) => {
+                                              // Use type assertion to extract inline property
+                                              const inline =
+                                                "inline" in props
+                                                  ? (props as any).inline
+                                                  : false;
+                                              const { children, ...restProps } =
+                                                props;
+
                                               return inline ? (
                                                 <code
                                                   className="bg-gray-200 px-1 rounded text-xs"
-                                                  {...props}
+                                                  {...restProps}
                                                 >
                                                   {children}
                                                 </code>
                                               ) : (
-                                                <pre
-                                                  className="bg-gray-200 p-2 rounded text-xs"
-                                                  {...props}
-                                                >
-                                                  <code>{children}</code>
+                                                <pre className="bg-gray-200 p-2 rounded text-xs">
+                                                  <code {...restProps}>
+                                                    {children}
+                                                  </code>
                                                 </pre>
                                               );
                                             },
@@ -901,6 +872,8 @@ export default function Chat() {
                                     </div>
                                   )}
                                 </div>
+
+                                {/* Citations section */}
                                 {!message.isStreaming &&
                                   message.citations &&
                                   message.citations.length > 0 && (
