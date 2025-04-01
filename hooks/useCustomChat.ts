@@ -338,56 +338,38 @@ const deptMapping =
     }
   }, []);
 
+ // Function to refresh tokens
   const refreshTokens = useCallback(async () => {
-  try {
-    const response = await fetch('/api/generate-tokens');
-    if (!response.ok) throw new Error('Token refresh failed');
-    const { authToken, verificationToken } = await response.json();
-    
-    // Store tokens
-    localStorage.setItem('x-auth-token', authToken);
-    localStorage.setItem('x-request-verification-token', verificationToken);
-    
-    return { authToken, verificationToken };
-  } catch (error) {
-    console.error("Token refresh error:", error);
-    throw error;
-  }
-}, []);
+    try {
+      const response = await fetch("/api/generate-tokens");
+      if (!response.ok) {
+        throw new Error(`Failed to refresh tokens: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.authToken && data.verificationToken) {
+        setAuthToken(data.authToken);
+        setVerificationToken(data.verificationToken);
+        return {
+          authToken: data.authToken,
+          verificationToken: data.verificationToken,
+        };
+      }
+      throw new Error("Invalid token data received");
+    } catch (err) {
+      console.error("Error refreshing tokens:", err);
+      setError("Failed to refresh authentication tokens");
+      return null;
+    }
+  }, [setAuthToken, setVerificationToken]);
 
-const ensureValidTokens = useCallback(async () => {
-  try {
-    // Get current tokens
-    let authToken = localStorage.getItem('x-auth-token');
-    let verificationToken = localStorage.getItem('x-request-verification-token');
-    
-    // Refresh if missing or expired
-    if (!authToken || !verificationToken) {
+  // Check and refresh tokens if needed
+  const ensureValidTokens = useCallback(async () => {
+    const authToken = getAuthToken();
+    if (!authToken || isTokenExpired(authToken)) {
       return await refreshTokens();
     }
-    
-    return { authToken, verificationToken };
-  } catch (error) {
-    console.error("Token validation error:", error);
-    throw error;
-  }
-}, [refreshTokens]);
-
-  // Function to refresh tokens
- 
-  // Check and refresh tokens if needed
-  // const ensureValidTokens = useCallback(async () => {
-  //   const authToken = getAuthToken();
-  //   if (!authToken || isTokenExpired(authToken)) {
-  //     return await refreshTokens();
-  //   }
-  //   return { authToken, verificationToken: getVerificationToken() };
-  // }, [getAuthToken, getVerificationToken, isTokenExpired, refreshTokens]);
-
-  // In your useCustomChat hook, modify the ensureValidTokens function:
-
-
-  // Function to manage message history by limiting the size
+    return { authToken, verificationToken: getVerificationToken() };
+  }, [getAuthToken, getVerificationToken, isTokenExpired, refreshTokens]);
   const updateMessagesWithHistoryLimit = useCallback((newMessages: Message[]) => {
     const threshold = 13;
   
@@ -965,11 +947,10 @@ const referencedDocsHeight = referencedDocs instanceof HTMLElement
             "X-Request-Verification-Token": tokens.verificationToken,
           },
           body: JSON.stringify({
-            // message: newMessages.map(({ role, content }) => ({
-            //   role,
-            //   content,
-            // })),
-            message: content,
+            message: newMessages.map(({ role, content }) => ({
+              role,
+              content,
+            })),
             department: currentDepartment,
             lang: currentLanguage === "auto" ? "auto" : currentLanguage,
           }),
