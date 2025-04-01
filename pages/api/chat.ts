@@ -101,37 +101,93 @@ export const config = {
   runtime: 'edge',
 };
 
+// Token validation function (replace with your actual validation logic)
+const validateToken = (token: string): boolean => {
+  if (!token) return false;
+  
+  // Simple JWT expiration check (for more robust validation, use a JWT library)
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return false;
+    
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    
+    // Check if token is expired
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp > currentTime;
+  } catch (error) {
+    console.error("Token validation error:", error);
+    return false;
+  }
+};
+
 export default async function handler(req: NextRequest) {
-  if (req.method !== "POST") {
+  // Handle CORS preflight request
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, x-auth-token, x-request-verification-token',
+      },
+    });
+  }
+
+  // Only allow POST requests
+  if (req.method !== 'POST') {
     return new Response(JSON.stringify({ message: "Method Not Allowed" }), {
       status: 405,
       headers: {
         'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
       },
     });
   }
 
   try {
+    // Parse request body
     const { message, department, lang = "auto" } = await req.json();
 
-    // Retrieve tokens from the request headers
-    const authToken = req.headers.get("x-auth-token") || '';
-    const verificationToken = req.headers.get("x-request-verification-token") || '';
+    // Retrieve and validate tokens from headers
+    const authToken = req.headers.get('x-auth-token');
+    const verificationToken = req.headers.get('x-request-verification-token');
 
     if (!authToken || !verificationToken) {
       return new Response(
-        JSON.stringify({ message: "Tokens are missing in the request headers" }),
+        JSON.stringify({ 
+          message: "Authentication tokens are missing",
+          error: "MISSING_TOKENS"
+        }),
         {
-          status: 400,
+          status: 401,
           headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
+      );
+    }
+
+    // Validate tokens
+    if (!validateToken(authToken) || !validateToken(verificationToken)) {
+      return new Response(
+        JSON.stringify({ 
+          message: "Invalid or expired authentication tokens",
+          error: "INVALID_TOKENS"
+        }),
+        {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
           },
         }
       );
     }
 
     // Forward the request to the chatbot API
-    const response = await fetch("https://chatbotapi.psegs.in/dgr-stream", {
+    const chatbotResponse = await fetch("https://chatbotapi.psegs.in/dgr-stream", {
       method: "POST",
       headers: {
         "Accept": "text/event-stream",
@@ -139,60 +195,105 @@ export default async function handler(req: NextRequest) {
         "X-Auth-Token": authToken,
         "X-Request-Verification-Token": verificationToken,
       },
-      body: JSON.stringify({ message, department, lang }),
+      body: JSON.stringify({ 
+        message, 
+        department, 
+        lang 
+      }),
     });
 
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      console.error("API Error Response:", errorResponse);
+    // Handle chatbot API errors
+    if (!chatbotResponse.ok) {
+      let errorResponse;
+      try {
+        errorResponse = await chatbotResponse.json();
+      } catch {
+        errorResponse = { error: "Unknown error occurred" };
+      }
 
-      if (errorResponse.error === "Invalid X-Auth-Token") {
+      // Special handling for token errors
+      if (chatbotResponse.status === 401) {
         return new Response(
-          JSON.stringify({ message: "Invalid X-Auth-Token" }),
+          JSON.stringify({ 
+            message: "Chatbot API rejected our tokens",
+            error: "CHATBOT_AUTH_FAILURE",
+            details: errorResponse
+          }),
           {
             status: 401,
             headers: {
               'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
             },
           }
         );
       }
 
-      if (response.status === 429) {
+      // Handle rate limiting
+      if (chatbotResponse.status === 429) {
         return new Response(
-          JSON.stringify({ message: "The stream is busy. Please try again later." }),
+          JSON.stringify({ 
+            message: "Chatbot API is busy. Please try again later.",
+            error: "RATE_LIMITED"
+          }),
           {
             status: 429,
             headers: {
               'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
             },
           }
         );
       }
 
-      throw new Error(errorResponse.error || `HTTP error! Status: ${response.status}`);
+      // Forward other errors
+      return new Response(
+        JSON.stringify({ 
+          message: "Chatbot API request failed",
+          error: "CHATBAPI_ERROR",
+          status: chatbotResponse.status,
+          details: errorResponse
+        }),
+        {
+          status: chatbotResponse.status,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
+      );
     }
 
     // Create a streaming response
     const stream = new ReadableStream({
       async start(controller) {
-        const reader = response.body?.getReader();
+        const reader = chatbotResponse.body?.getReader();
+        
         if (!reader) {
           controller.error(new Error("No reader available"));
           return;
         }
 
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            controller.enqueue(value);
+        const processStream = async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              controller.enqueue(value);
+            }
+            controller.close();
+          } catch (error) {
+            console.error("Stream error:", error);
+            controller.error(error);
           }
-          controller.close();
-        } catch (error) {
-          controller.error(error);
-        }
+        };
+
+        await processStream();
       },
+      cancel() {
+        // Clean up if the stream is cancelled
+        chatbotResponse.body?.cancel();
+      }
     });
 
     return new Response(stream, {
@@ -200,20 +301,24 @@ export default async function handler(req: NextRequest) {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
       },
     });
+
   } catch (error) {
-    console.error("Error in /api/chat:", error);
+    console.error("Chat API error:", error);
     return new Response(
-      JSON.stringify({ message: "Internal Server Error" }),
+      JSON.stringify({ 
+        message: "Internal Server Error",
+        error: "INTERNAL_ERROR"
+      }),
       {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
         },
       }
     );
   }
 }
-
-
