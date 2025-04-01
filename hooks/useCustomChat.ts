@@ -363,13 +363,36 @@ const deptMapping =
   }, [setAuthToken, setVerificationToken]);
 
   // Check and refresh tokens if needed
-  const ensureValidTokens = useCallback(async () => {
-    const authToken = getAuthToken();
-    if (!authToken || isTokenExpired(authToken)) {
-      return await refreshTokens();
+  // const ensureValidTokens = useCallback(async () => {
+  //   const authToken = getAuthToken();
+  //   if (!authToken || isTokenExpired(authToken)) {
+  //     return await refreshTokens();
+  //   }
+  //   return { authToken, verificationToken: getVerificationToken() };
+  // }, [getAuthToken, getVerificationToken, isTokenExpired, refreshTokens]);
+
+  // In your useCustomChat hook, modify the ensureValidTokens function:
+const ensureValidTokens = useCallback(async () => {
+  try {
+    let authToken = getAuthToken();
+    let verificationToken = getVerificationToken();
+    
+    // Check if tokens exist and are valid
+    if (!authToken || !verificationToken || isTokenExpired(authToken)) {
+      const newTokens = await refreshTokens();
+      if (!newTokens) {
+        throw new Error("Failed to refresh tokens");
+      }
+      authToken = newTokens.authToken;
+      verificationToken = newTokens.verificationToken;
     }
-    return { authToken, verificationToken: getVerificationToken() };
-  }, [getAuthToken, getVerificationToken, isTokenExpired, refreshTokens]);
+    
+    return { authToken, verificationToken };
+  } catch (error) {
+    console.error("Token validation error:", error);
+    throw error;
+  }
+}, [getAuthToken, getVerificationToken, isTokenExpired, refreshTokens]);
 
   // Function to manage message history by limiting the size
   const updateMessagesWithHistoryLimit = useCallback((newMessages: Message[]) => {
@@ -949,10 +972,11 @@ const referencedDocsHeight = referencedDocs instanceof HTMLElement
             "X-Request-Verification-Token": tokens.verificationToken,
           },
           body: JSON.stringify({
-            message: newMessages.map(({ role, content }) => ({
-              role,
-              content,
-            })),
+            // message: newMessages.map(({ role, content }) => ({
+            //   role,
+            //   content,
+            // })),
+            message: content,
             department: currentDepartment,
             lang: currentLanguage === "auto" ? "auto" : currentLanguage,
           }),
