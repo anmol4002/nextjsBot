@@ -338,7 +338,7 @@ const deptMapping =
     }
   }, []);
 
- // Function to refresh tokens
+  // Function to refresh tokens
   const refreshTokens = useCallback(async () => {
     try {
       const response = await fetch("/api/generate-tokens");
@@ -370,6 +370,8 @@ const deptMapping =
     }
     return { authToken, verificationToken: getVerificationToken() };
   }, [getAuthToken, getVerificationToken, isTokenExpired, refreshTokens]);
+
+  // Function to manage message history by limiting the size
   const updateMessagesWithHistoryLimit = useCallback((newMessages: Message[]) => {
     const threshold = 13;
   
@@ -1006,6 +1008,11 @@ const referencedDocsHeight = referencedDocs instanceof HTMLElement
     isLanguageChanging,
   };
 };
+
+
+
+
+
 
 
 
