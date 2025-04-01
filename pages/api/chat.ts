@@ -2,6 +2,13 @@
 
 import { NextApiRequest, NextApiResponse } from "next";
 
+export const config = {
+  api: {
+    responseLimit: false, // Disable default response limit
+    externalResolver: true, // Prevents automatic response handling
+  },
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -71,6 +78,7 @@ export default async function handler(
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    res.flushHeaders(); // Send headers immediately
 
     while (true) {
       const { done, value } = await reader.read();
