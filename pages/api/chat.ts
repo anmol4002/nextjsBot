@@ -94,47 +94,24 @@
 
 
 
-
 import { NextRequest } from "next/server";
 
 export const config = {
   runtime: 'edge',
 };
 
-// Token validation function (replace with your actual validation logic)
-const validateToken = (token: string): boolean => {
-  if (!token) return false;
-  
-  // Simple JWT expiration check (for more robust validation, use a JWT library)
-  try {
-    const base64Url = token.split('.')[1];
-    if (!base64Url) return false;
-    
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(base64));
-    
-    // Check if token is expired
-    const currentTime = Math.floor(Date.now() / 1000);
-    return payload.exp > currentTime;
-  } catch (error) {
-    console.error("Token validation error:", error);
-    return false;
-  }
-};
-
 export default async function handler(req: NextRequest) {
-  // Handle CORS preflight request
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, x-auth-token, x-request-verification-token',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-auth-token, x-request-verification-token',
       },
     });
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ message: "Method Not Allowed" }), {
       status: 405,
@@ -146,17 +123,14 @@ export default async function handler(req: NextRequest) {
   }
 
   try {
-    // Parse request body
-    const { message, department, lang = "auto" } = await req.json();
-
-    // Retrieve and validate tokens from headers
+    // Get tokens from headers
     const authToken = req.headers.get('x-auth-token');
     const verificationToken = req.headers.get('x-request-verification-token');
 
     if (!authToken || !verificationToken) {
       return new Response(
         JSON.stringify({ 
-          message: "Authentication tokens are missing",
+          message: "Authentication tokens are required",
           error: "MISSING_TOKENS"
         }),
         {
@@ -169,24 +143,10 @@ export default async function handler(req: NextRequest) {
       );
     }
 
-    // Validate tokens
-    if (!validateToken(authToken) || !validateToken(verificationToken)) {
-      return new Response(
-        JSON.stringify({ 
-          message: "Invalid or expired authentication tokens",
-          error: "INVALID_TOKENS"
-        }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        }
-      );
-    }
+    // Parse request body
+    const { message, department, lang = "auto" } = await req.json();
 
-    // Forward the request to the chatbot API
+    // Forward to chatbot API
     const chatbotResponse = await fetch("https://chatbotapi.psegs.in/dgr-stream", {
       method: "POST",
       headers: {
@@ -195,64 +155,16 @@ export default async function handler(req: NextRequest) {
         "X-Auth-Token": authToken,
         "X-Request-Verification-Token": verificationToken,
       },
-      body: JSON.stringify({ 
-        message, 
-        department, 
-        lang 
-      }),
+      body: JSON.stringify({ message, department, lang }),
     });
 
-    // Handle chatbot API errors
     if (!chatbotResponse.ok) {
-      let errorResponse;
-      try {
-        errorResponse = await chatbotResponse.json();
-      } catch {
-        errorResponse = { error: "Unknown error occurred" };
-      }
-
-      // Special handling for token errors
-      if (chatbotResponse.status === 401) {
-        return new Response(
-          JSON.stringify({ 
-            message: "Chatbot API rejected our tokens",
-            error: "CHATBOT_AUTH_FAILURE",
-            details: errorResponse
-          }),
-          {
-            status: 401,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-            },
-          }
-        );
-      }
-
-      // Handle rate limiting
-      if (chatbotResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ 
-            message: "Chatbot API is busy. Please try again later.",
-            error: "RATE_LIMITED"
-          }),
-          {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-            },
-          }
-        );
-      }
-
-      // Forward other errors
+      const error = await chatbotResponse.json().catch(() => ({}));
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           message: "Chatbot API request failed",
-          error: "CHATBAPI_ERROR",
           status: chatbotResponse.status,
-          details: errorResponse
+          ...error
         }),
         {
           status: chatbotResponse.status,
@@ -264,36 +176,27 @@ export default async function handler(req: NextRequest) {
       );
     }
 
-    // Create a streaming response
+    // Create streaming response
     const stream = new ReadableStream({
       async start(controller) {
         const reader = chatbotResponse.body?.getReader();
-        
         if (!reader) {
-          controller.error(new Error("No reader available"));
+          controller.close();
           return;
         }
 
-        const processStream = async () => {
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              controller.enqueue(value);
-            }
-            controller.close();
-          } catch (error) {
-            console.error("Stream error:", error);
-            controller.error(error);
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            controller.enqueue(value);
           }
-        };
-
-        await processStream();
+          controller.close();
+        } catch (error) {
+          console.error("Stream error:", error);
+          controller.error(error);
+        }
       },
-      cancel() {
-        // Clean up if the stream is cancelled
-        chatbotResponse.body?.cancel();
-      }
     });
 
     return new Response(stream, {
@@ -306,11 +209,11 @@ export default async function handler(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error("API Error:", error);
     return new Response(
       JSON.stringify({ 
         message: "Internal Server Error",
-        error: "INTERNAL_ERROR"
+        error: "SERVER_ERROR"
       }),
       {
         status: 500,
