@@ -863,7 +863,133 @@ const referencedDocsHeight = referencedDocs instanceof HTMLElement
     [replaceDocsWithAnchors, scrollToBottom, t]
   );
 
-  const handleSubmit = useCallback(
+  // const handleSubmit = useCallback(
+  //   async (e: React.FormEvent<HTMLFormElement>, messageContent?: string) => {
+  //     e?.preventDefault();
+  //     const content = messageContent || input;
+
+  //     if (!content.trim()) return;
+
+  //     setIsLoading(true);
+  //     setError(null);
+
+  //     const safeApiCall = async (callback: () => Promise<any>) => {
+  //       try {
+  //         const result = await callback();
+  //         setIsLoading(false);
+  //         return result;
+  //       } catch (err) {
+  //         console.error("API Call Error:", err);
+
+  //         // Custom error message
+  //         const errorMessage =
+  //           "An error occurred. Please refresh or try again later.";
+
+  //         setMessages((prev) => [
+  //           ...prev,
+  //           {
+  //             role: "assistant" as const,
+  //             content: errorMessage,
+  //             timestamp: new Date(),
+  //           },
+  //         ]);
+
+  //         setToast({
+  //           message: errorMessage,
+  //           type: "error",
+  //         });
+
+  //         setIsLoading(false);
+  //         return null;
+  //       }
+  //     };
+
+  //     // Handle department selection
+  //     if (!isDepartmentLocked) {
+  //       const potentialDepartmentCode = getDepartmentCode(content);
+  //       const isDepartmentSelection =
+  //         Object.values(deptMapping).includes(potentialDepartmentCode) ||
+  //         Object.keys(deptMapping).some(
+  //           (dept) =>
+  //             dept.toLowerCase().includes(content.toLowerCase()) ||
+  //             content.toLowerCase().includes(dept.toLowerCase())
+  //         );
+
+  //       if (isDepartmentSelection) {
+  //         await safeApiCall(async () => {
+  //           await sendDepartmentMessage(content);
+  //           setInput("");
+  //         });
+  //         return;
+  //       }
+  //     }
+
+  //     // Handle normal messages
+  //     await safeApiCall(async () => {
+  //       const newMessages = updateMessagesWithHistoryLimit([
+  //         ...messages,
+  //         {
+  //           role: "user",
+  //           content,
+  //           timestamp: new Date(),
+  //         },
+  //       ]);
+
+  //       setMessages(newMessages);
+  //       setInput("");
+
+  //       const tokens = await ensureValidTokens();
+  //       if (!tokens) throw new Error("Unable to get valid tokens");
+
+  //       const response = await fetch("/api/chat", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "X-Auth-Token": tokens.authToken,
+  //           "X-Request-Verification-Token": tokens.verificationToken,
+  //         },
+  //         body: JSON.stringify({
+  //           message: newMessages.map(({ role, content }) => ({
+  //             role,
+  //             content,
+  //           })),
+  //           department: currentDepartment,
+  //           lang: currentLanguage === "auto" ? "auto" : currentLanguage,
+  //         }),
+  //       });
+
+  //       if (!response.ok) {
+  //         const errorText = await response.text();
+  //         throw new Error(
+  //           `API request failed: ${response.status} - ${errorText}`
+  //         );
+  //       }
+
+  //       const reader = response.body?.getReader();
+  //       if (!reader) {
+  //         throw new Error("Could not get response reader");
+  //       }
+
+  //       // Wait for the streaming to complete
+  //       await processStreamResponse(reader, newMessages);
+  //     });
+  //   },
+  //   [
+  //     input,
+  //     messages,
+  //     currentDepartment,
+  //     isDepartmentLocked,
+  //     t,
+  //     deptMapping,
+  //     updateMessagesWithHistoryLimit,
+  //     ensureValidTokens,
+  //     processStreamResponse,
+  //     getDepartmentCode,
+  //     sendDepartmentMessage,
+  //   ]
+  // );
+
+   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>, messageContent?: string) => {
       e?.preventDefault();
       const content = messageContent || input;
@@ -958,7 +1084,12 @@ const referencedDocsHeight = referencedDocs instanceof HTMLElement
           }),
         });
 
-        if (!response.ok) {
+        if (response.ok && response.body) {
+      const reader = response.body.getReader();
+      await processStreamResponse(reader, newMessages);
+    }
+
+        if (!response.ok ) {
           const errorText = await response.text();
           throw new Error(
             `API request failed: ${response.status} - ${errorText}`
