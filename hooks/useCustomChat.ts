@@ -339,29 +339,57 @@ const deptMapping =
   }, []);
 
   // Function to refresh tokens
-  const refreshTokens = useCallback(async () => {
-    try {
-      const response = await fetch("/api/generate-tokens");
-      if (!response.ok) {
-        throw new Error(`Failed to refresh tokens: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.authToken && data.verificationToken) {
-        setAuthToken(data.authToken);
-        setVerificationToken(data.verificationToken);
-        return {
-          authToken: data.authToken,
-          verificationToken: data.verificationToken,
-        };
-      }
-      throw new Error("Invalid token data received");
-    } catch (err) {
-      console.error("Error refreshing tokens:", err);
-      setError("Failed to refresh authentication tokens");
-      return null;
-    }
-  }, [setAuthToken, setVerificationToken]);
+  // const refreshTokens = useCallback(async () => {
+  //   try {
+  //     const response = await fetch("/api/generate-tokens");
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to refresh tokens: ${response.status}`);
+  //     }
+  //     const data = await response.json();
+  //     if (data.authToken && data.verificationToken) {
+  //       setAuthToken(data.authToken);
+  //       setVerificationToken(data.verificationToken);
+  //       return {
+  //         authToken: data.authToken,
+  //         verificationToken: data.verificationToken,
+  //       };
+  //     }
+  //     throw new Error("Invalid token data received");
+  //   } catch (err) {
+  //     console.error("Error refreshing tokens:", err);
+  //     setError("Failed to refresh authentication tokens");
+  //     return null;
+  //   }
+  // }, [setAuthToken, setVerificationToken]);
 
+
+const refreshTokens = useCallback(async () => {
+  try {
+    const response = await fetch("/api/generate-tokens", {
+      cache: 'no-store'  
+    });
+    
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+    if (!data.authToken || !data.verificationToken) {
+      throw new Error('Invalid token response');
+    }
+    
+    setAuthToken(data.authToken);
+    setVerificationToken(data.verificationToken);
+    return data;
+  } catch (err) {
+    console.error("Token refresh failed:", err);
+    setToast({
+      message: "Session expired - please refresh the page",
+      type: "error",
+      duration: 5000
+    });
+    return null;
+  }
+}, [setAuthToken, setVerificationToken]);
+  
   // Check and refresh tokens if needed
   const ensureValidTokens = useCallback(async () => {
     const authToken = getAuthToken();
