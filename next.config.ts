@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
- 
+ runtime: 'edge',
   experimental: {
-    runtime: 'edge', 
+     
     serverComponentsExternalPackages: ['jsonwebtoken'],
   },
   images: {
