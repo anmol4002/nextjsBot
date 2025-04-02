@@ -101,54 +101,45 @@ export const config = {
 };
 
 export default async function handler(req: NextRequest) {
-  // Handle CORS preflight request
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token, X-Request-Verification-Token',
+  };
+
   if (req.method === 'OPTIONS') {
-    return new NextResponse(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token, X-Request-Verification-Token',
-      },
-    });
+    return new NextResponse(null, { headers: corsHeaders });
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return new NextResponse(
       JSON.stringify({ message: 'Method Not Allowed' }),
-      {
-        status: 405,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
+      { status: 405, headers: corsHeaders }
     );
   }
 
   try {
-    // Parse the request body
     const { message, department, lang = "auto" } = await req.json();
-
-    // Retrieve tokens from headers
     const authToken = req.headers.get('x-auth-token');
     const verificationToken = req.headers.get('x-request-verification-token');
 
     if (!authToken || !verificationToken) {
       return new NextResponse(
-        JSON.stringify({ message: 'Tokens are missing in the request headers' }),
-        {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        }
+        JSON.stringify({ message: 'Missing authentication tokens' }),
+        { status: 401, headers: corsHeaders }
       );
     }
 
-    // Forward to chatbot API
-    const response = await fetch("https://chatbotapi.psegs.in/dgr-stream", {
+    // Verify token structure before forwarding
+    if (!authToken.match(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/)) {
+      return new NextResponse(
+        JSON.stringify({ message: 'Malformed X-Auth-Token' }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    const chatbotResponse = await fetch("https://chatbotapi.psegs.in/dgr-stream", {
       method: "POST",
       headers: {
         "Accept": "text/event-stream",
@@ -159,77 +150,31 @@ export default async function handler(req: NextRequest) {
       body: JSON.stringify({ message, department, lang }),
     });
 
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      console.error("API Error Response:", errorResponse);
-
-      if (errorResponse.error === "Invalid X-Auth-Token") {
-        return new NextResponse(
-          JSON.stringify({ message: "Invalid X-Auth-Token" }),
-          {
-            status: 401,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-            },
-          }
-        );
-      }
-
-      if (response.status === 429) {
-        return new NextResponse(
-          JSON.stringify({ message: "The stream is busy. Please try again later." }),
-          {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-            },
-          }
-        );
-      }
-
+    if (!chatbotResponse.ok) {
+      const error = await chatbotResponse.text();
       return new NextResponse(
-        JSON.stringify({ message: errorResponse.error || `HTTP error! Status: ${response.status}` }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        }
+        JSON.stringify({ message: 'Chatbot API error', error: error.substring(0, 200) }),
+        { status: chatbotResponse.status, headers: corsHeaders }
       );
     }
 
-    // Create a streaming response
+    // Create streaming response
     const { readable, writable } = new TransformStream();
-    
-    // Pipe the response stream to the client
-    if (response.body) {
-      response.body.pipeTo(writable).catch(err => {
-        console.error('Stream error:', err);
-      });
-    }
+    chatbotResponse.body?.pipeTo(writable).catch(console.error);
 
     return new NextResponse(readable, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
+        ...corsHeaders
       },
     });
+
   } catch (error) {
-    console.error("Error in /api/chat:", error);
+    console.error('Chat API error:', error);
     return new NextResponse(
-      JSON.stringify({ message: "Internal Server Error" }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
+      JSON.stringify({ message: 'Internal Server Error' }),
+      { status: 500, headers: corsHeaders }
     );
   }
 }
