@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  //--
-  // output: 'export',
  
+  experimental: {
+    runtime: 'edge', 
+    serverComponentsExternalPackages: ['jsonwebtoken'],
+  },
   images: {
     unoptimized: true, 
   },
@@ -11,7 +13,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   reactStrictMode: true,
-  //--
+  
 };
 
 export default nextConfig;
