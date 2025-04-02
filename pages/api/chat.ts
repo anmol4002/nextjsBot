@@ -94,7 +94,6 @@
 
 
 
-
 import { NextRequest, NextResponse } from 'next/server';
 
 export const config = {
@@ -204,21 +203,13 @@ export default async function handler(req: NextRequest) {
 
     // Create a streaming response
     const { readable, writable } = new TransformStream();
-    const writer = writable.getWriter();
-    const encoder = new TextEncoder();
-
+    
     // Pipe the response stream to the client
-    response.body?.pipeTo(new WritableStream({
-      write(chunk) {
-        writer.write(encoder.encode(chunk));
-      },
-      close() {
-        writer.close();
-      },
-      abort(err) {
-        writer.abort(err);
-      },
-    }));
+    if (response.body) {
+      response.body.pipeTo(writable).catch(err => {
+        console.error('Stream error:', err);
+      });
+    }
 
     return new NextResponse(readable, {
       headers: {
@@ -242,4 +233,3 @@ export default async function handler(req: NextRequest) {
     );
   }
 }
-
