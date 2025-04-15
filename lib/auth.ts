@@ -22,48 +22,21 @@ export const useTokenManagement = () => {
   const setVerificationToken = useCallback((token: string) => setStorageItem("verification-token", token), [setStorageItem]);
 
   
-  // const generateTokens = useCallback(async () => {
-  //   try {
-  //     const authToken = jwt.sign({ property: "Punjab Government" }, JWT_KEY, { expiresIn: "1h" });
-  //     const verificationToken = `verification-token-${Date.now()}`;
+  const generateTokens = useCallback(async () => {
+    try {
+      const authToken = jwt.sign({ property: "Punjab Government" }, JWT_KEY, { expiresIn: "1h" });
+      const verificationToken = `verification-token-${Date.now()}`;
       
-  //     setAuthToken(authToken);
-  //     setVerificationToken(verificationToken);
+      setAuthToken(authToken);
+      setVerificationToken(verificationToken);
       
-  //     return { authToken, verificationToken };
-  //   } catch (error) {
-  //     console.error("Error generating tokens:", error);
-  //     throw new Error("Failed to generate authentication tokens");
-  //   }
-  // }, [JWT_KEY, setAuthToken, setVerificationToken]);
-  
-const generateTokens = useCallback(async () => {
-  try {
-    if (typeof window === "undefined") {
-      throw new Error("Cannot generate tokens on server side");
+      return { authToken, verificationToken };
+    } catch (error) {
+      console.error("Error generating tokens:", error);
+      throw new Error("Failed to generate authentication tokens");
     }
-    
-    const JWT_KEY = process.env.NEXT_PUBLIC_JWT_KEY;
-    if (!JWT_KEY) {
-      throw new Error("JWT secret key is not configured");
-    }
+  }, [JWT_KEY, setAuthToken, setVerificationToken]);
 
-    // Dynamic import to avoid SSR issues
-    const { default: jwt } = await import('jsonwebtoken');
-    const authToken = jwt.sign({ property: "Punjab Government" }, JWT_KEY, { expiresIn: "1h" });
-    const verificationToken = `verification-token-${Date.now()}`;
-    
-    setAuthToken(authToken);
-    setVerificationToken(verificationToken);
-    
-    return { authToken, verificationToken };
-  } catch (error) {
-    console.error("Error generating tokens:", error);
-    throw new Error("Failed to generate authentication tokens");
-  }
-}, [setAuthToken, setVerificationToken]);
-
-  
 
   const isTokenExpired = useCallback((token: string) => {
     if (!token) return true;
@@ -143,12 +116,6 @@ const generateTokens = useCallback(async () => {
     refreshTokens
   };
 };
-
-
-
-
-
-
 
 
 
