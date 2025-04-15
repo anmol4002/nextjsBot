@@ -247,9 +247,9 @@ export default function Chat() {
 
         {showIcons && (
           <div
-            className={`fixed bottom-2 right-4 z-50 flex items-center bg-surface-container-low rounded-[28px] shadow-lg p-1 sm:p-2 animate-slideInRight`}
+            className={`fixed bottom-2 right-4 z-50 flex items-center bg-surface-container-low rounded-[28px] shadow-lg p-2 animate-slideInRight`}
           >
-            <div className="flex items-center mr-6 sm:mr-40 ml-1">
+            <div className="flex items-center mr-40 ml-1">
               {[
                 {
                   src: "/images/finalbot.gif",
@@ -283,7 +283,7 @@ export default function Chat() {
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="w-10 h-10 sm:w-12 sm:h-12  flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 mx-0.5 sm:mx-1 hover:-translate-y-1">
+                      <div className="w-12 h-12  flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 mx-1 hover:-translate-y-1">
                         <Image
                           src={item.src}
                           alt={item.alt}
