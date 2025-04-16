@@ -57,7 +57,7 @@ export const useCustomChat = (language = "en") => {
       setCurrentLanguage(language as Language);
       setIsLanguageChanging(false);
     }
-  }, [language]);
+  }, [language,currentLanguage, isLanguageChanging]);
 
   // Auto-scrolling on new messages
   useEffect(() => {
@@ -213,7 +213,7 @@ export const useCustomChat = (language = "en") => {
       setIsLoading(true);
       setError(null);
 
-      const safeApiCall = async (callback: () => Promise<any>) => {
+      const safeApiCall = async  <T>(callback: () => Promise<T>): Promise<T | null> => {
         try {
           const result = await callback();
           setIsLoading(false);
