@@ -214,7 +214,7 @@ export const processStreamResponse = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
   currentMessages: Message[],
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  scrollToBottom: (options?: ScrollOptions) => void,
+  scrollToBottom: (options?: any) => void,
   errorMessage: string
 ): Promise<string> => {
   const decoder = new TextDecoder();
