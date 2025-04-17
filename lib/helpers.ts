@@ -4,6 +4,7 @@ import {
   Language, 
   Message, 
   Citation, 
+  ScrollOptions,
   DEFAULT_DEPARTMENT, 
   DepartmentCode ,
   updateMessagesWithHistoryLimit,
@@ -49,7 +50,7 @@ export const getTranslations = (language: Language) => {
 export const isDepartmentSelectionMessage = (
   content: string,
   currentLanguage: Language,
-  deptMapping: any
+  deptMapping: Record<string, DepartmentCode>
 ): boolean => {
   const potentialDepartmentCode = getDepartmentCode(content, currentLanguage);
   return (
@@ -214,7 +215,7 @@ export const processStreamResponse = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
   currentMessages: Message[],
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  scrollToBottom: (options?: any) => void,
+  scrollToBottom: (options?:  ScrollOptions) => void,
   errorMessage: string
 ): Promise<string> => {
   const decoder = new TextDecoder();
