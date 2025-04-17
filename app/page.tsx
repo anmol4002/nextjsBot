@@ -246,6 +246,87 @@ export default function Chat() {
         )}
 
         {showIcons && (
+          <div className="fixed bottom-2 z-50 right-4  w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-surface-container-low rounded-[28px] shadow-lg p-2 animate-slideInRight">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              {[
+                {
+                  src: "/images/finalbot.gif",
+                  alt: "Chatbot",
+                  onClick: toggleChat,
+                  tooltip: "Chat with Punjab Govt. AI Assistant",
+                },
+                {
+                  src: "/images/awhatsapp.gif",
+                  alt: "WhatsApp",
+                  onClick: handleWhatsAppClick,
+                  tooltip: "WhatsApp Chatbot",
+                },
+                {
+                  src: "/images/acall.gif",
+                  alt: "Contact",
+                  onClick: handlePhoneClick,
+                  tooltip: "State Helpline 1100",
+                },
+                {
+                  src: "/images/aqr.gif",
+                  alt: "QR Scan",
+                  onClick: handleQRClick,
+                  tooltip: "QR Code to open Whatsapp Chatbot",
+                },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="animate-iconAppear flex-shrink-0"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                        <Image
+                          src={item.src}
+                          alt={item.alt}
+                          width={48}
+                          height={48}
+                          className="rounded-full cursor-pointer hover:scale-110 transition-transform duration-300 ease-out"
+                          onClick={item.onClick}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="bg-gray-800 text-white"
+                    >
+                      <p>{item.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className="animate-iconAppear flex-shrink-0 ml-1"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={toggleIcons}
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
+                    aria-label="Close icons"
+                    size="icon"
+                  >
+                    <X className="size-6 text-white" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-gray-800 text-white">
+                  <p>Close</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        )}
+
+{/*         {showIcons && (
           <div
             className={`fixed bottom-2 right-4 z-50  w-[95%] max-w-[500px] mx-auto flex items-center bg-surface-container-low rounded-[28px] shadow-lg p-2 animate-slideInRight`}
           >
@@ -328,7 +409,7 @@ export default function Chat() {
             </div>
           </div>
         )}
-
+ */}
         {isChatOpen && (
           <div
             className={`fixed z-50 ${
