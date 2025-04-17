@@ -247,9 +247,9 @@ export default function Chat() {
 
         {showIcons && (
           <div
-            className={`fixed bottom-2 right-4 z-50 flex items-center bg-surface-container-low rounded-[28px] shadow-lg p-2 animate-slideInRight`}
+            className={`fixed bottom-2 right-4 z-50  w-[95%] max-w-[500px] mx-auto flex items-center bg-surface-container-low rounded-[28px] shadow-lg p-2 animate-slideInRight`}
           >
-            <div className="flex items-center mr-40 ml-1">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               {[
                 {
                   src: "/images/finalbot.gif",
@@ -307,7 +307,7 @@ export default function Chat() {
             </div>
 
             <div
-              className="animate-iconAppear"
+              className="animate-iconAppear flex-shrink-0 ml-1"
               style={{ animationDelay: "0.4s" }}
             >
               <Tooltip>
