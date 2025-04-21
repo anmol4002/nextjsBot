@@ -1,3 +1,4 @@
+
 "use client";
 
 import dynamic from "next/dynamic";
@@ -9,10 +10,11 @@ const ChatWidget = dynamic(() => import("@/app/page"), {
 });
 
 export default function WidgetPage() {
+  
   return (
     <div className="w-full h-full bg-transparent">
       <Suspense fallback={<div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 animate-pulse"></div>}>
-        <ChatWidget />
+        <ChatWidget isWidget={true} />
       </Suspense>
     </div>
   );
