@@ -618,8 +618,21 @@ export default function Chat() {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
-  const handleMaximize = () => setIsMaximized(true);
-  const handleRestore = () => setIsMaximized(false);
+  const handleMaximize = () => {
+  setIsMaximized(true);
+ 
+  if (isInIframe) {
+    window.parent.postMessage({ type: 'chatMaximize', maximized: true }, '*');
+  }
+};
+
+const handleRestore = () => {
+  setIsMaximized(false);
+
+  if (isInIframe) {
+    window.parent.postMessage({ type: 'chatMaximize', maximized: false }, '*');
+  }
+};
 
   const handleResetChat = () => {
     resetChat();
