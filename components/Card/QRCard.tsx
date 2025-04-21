@@ -14,8 +14,8 @@ interface QRCardProps {
 export default function QRCard({ onClose }: QRCardProps) {
   return (
     <>
-      <div className="flex justify-between items-center border-b border-outline-variant p-3 bg-surface-container">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-center border-b border-outline-variant p-4 bg-surface-container">
+        <div className="flex items-center gap-3">
           <Image
             src="/images/logo.png"
             alt="Logo"
