@@ -500,7 +500,7 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-  //----
+ 
   useEffect(() => {
 
     try {
@@ -509,10 +509,8 @@ export default function Chat() {
       setIsInIframe(true);
       console.error("Error checking iframe status:", e);
     }
-    if (isInIframe) {
-      setShowIcons(true);
-    }
-  }, [isInIframe]);
+   
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -650,7 +648,7 @@ export default function Chat() {
     <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
 
       <TooltipProvider>
-        {!showIcons && !isInIframe && (
+        {!showIcons  && (
           <div
             className={`fixed bottom-4 right-6 z-50 ${
               !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
