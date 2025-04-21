@@ -80,16 +80,30 @@ export default function Chat() {
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
  
+ 
   useEffect(() => {
-
     try {
       setIsInIframe(window.self !== window.top);
+      
+      
+      const sendMessageToParent = (message: any) => {
+        if (window.parent) {
+          window.parent.postMessage(message, '*');
+        }
+      };
+      
+     
+      if (isChatOpen) {
+        sendMessageToParent({ type: 'chatState', isOpen: true });
+      } else {
+        sendMessageToParent({ type: 'chatState', isOpen: false });
+      }
+      
     } catch (e) {
       setIsInIframe(true);
       console.error("Error checking iframe status:", e);
     }
-   
-  }, []);
+  }, [isChatOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
