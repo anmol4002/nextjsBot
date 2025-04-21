@@ -45,16 +45,15 @@ export default function QRCard({ onClose }: QRCardProps) {
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className="flex items-center justify-center p-2">
+      <div className="flex items-center justify-center p-2 pb-5">
         <Image
           src="/images/qr-photo.png"
           alt="QR Code"
-          width={430}
-          height={430}
+          width={420}
+          height={420}
           className="rounded"
         />
       </div>
     </>
   );
 }
-
