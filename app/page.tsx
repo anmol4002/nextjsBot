@@ -416,6 +416,23 @@
 // }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client";
 import dynamic from "next/dynamic";
 
@@ -466,7 +483,7 @@ const getDepartmentInfo = (
   );
 };
 
-export default function Chat() {
+export default function Chat({ isWidget = false }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
@@ -501,17 +518,20 @@ export default function Chat() {
 
   //----
   useEffect(() => {
-  
+    // Check if running inside an iframe
     try {
       setIsInIframe(window.self !== window.top);
     } catch (e) {
       setIsInIframe(true);
       console.error("Error checking iframe status:", e);
     }
-    if (isInIframe) {
+    
+    // Auto-open chat in widget mode
+    if (isWidget || isInIframe) {
+      setIsChatOpen(true);
       setShowIcons(true);
     }
-  }, [isInIframe]);
+  }, [isWidget, isInIframe]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -604,8 +624,40 @@ export default function Chat() {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
-  const handleMaximize = () => setIsMaximized(true);
-  const handleRestore = () => setIsMaximized(false);
+  
+
+
+  const handleMaximize = () => {
+    setIsMaximized(true);
+    
+    // If in iframe, send message to parent to expand
+    if (isInIframe) {
+      try {
+        window.parent.postMessage({
+          type: 'CHATBOT_MAXIMIZE',
+          payload: true
+        }, '*');
+      } catch (e) {
+        console.error('Failed to send message to parent', e);
+      }
+    }
+  };
+  
+  const handleRestore = () => {
+    setIsMaximized(false);
+    
+    // If in iframe, send message to parent to shrink back
+    if (isInIframe) {
+      try {
+        window.parent.postMessage({
+          type: 'CHATBOT_MAXIMIZE',
+          payload: false
+        }, '*');
+      } catch (e) {
+        console.error('Failed to send message to parent', e);
+      }
+    }
+  };
 
   const handleResetChat = () => {
     resetChat();
@@ -646,10 +698,10 @@ export default function Chat() {
 
   return (
     
-    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
+    <div className={`${isInIframe || isWidget ? ' bg-transparent' : 'flex flex-col min-h-screen'}`}>
       
       <TooltipProvider>
-        {!showIcons && !isInIframe && (
+        {!showIcons && !isInIframe && !isWidget && (
           <div
             className={`fixed bottom-4 right-6 z-50 ${
               !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
@@ -768,16 +820,19 @@ export default function Chat() {
 
         {isChatOpen && (
           <div
-            className={`fixed z-50 ${
-              isMaximized
-                ? "inset-0 bottom-0 p-0 animate-fadeIn"
-                : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
-            }`}
-            style={{
-              width: isMaximized ? "100%" : "95%",
-              height: isMaximized ? "100vh" : "auto",
-              borderRadius: isMaximized ? "0" : "12px",
-            }}
+          className={`fixed z-50 ${
+            isMaximized
+              ? isInIframe || isWidget 
+                ? "inset-0 bottom-0 p-0 animate-fadeIn" 
+                : "inset-0 bottom-0 p-0 animate-fadeIn"
+              : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
+          }`}
+          style={{
+            width: isMaximized ? "100%" : "95%",
+            height: isMaximized ? (isInIframe || isWidget ? "100vh" : "100vh") : "auto",
+            maxHeight: isMaximized ? "100vh" : "80vh",
+            borderRadius: isMaximized ? "0" : "12px",
+          }}
           >
             <Card
               className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out
@@ -854,4 +909,3 @@ export default function Chat() {
     </div>
   );
 }
-
