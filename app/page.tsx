@@ -358,7 +358,7 @@ export default function Chat() {
           >
             <Card
               className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out
-          ${isMaximized ? "h-full rounded-none" : "h-auto rounded-[20px]"}`}
+         `}
             >
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
