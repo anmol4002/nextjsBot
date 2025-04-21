@@ -14,8 +14,8 @@ interface QRCardProps {
 export default function QRCard({ onClose }: QRCardProps) {
   return (
     <>
-      <div className="flex justify-between items-center border-b border-outline-variant p-4 bg-surface-container">
-        <div className="flex items-center gap-3">
+      <div className="flex justify-between items-center border-b border-outline-variant p-3 bg-surface-container">
+        <div className="flex items-center gap-2">
           <Image
             src="/images/logo.png"
             alt="Logo"
@@ -49,11 +49,12 @@ export default function QRCard({ onClose }: QRCardProps) {
         <Image
           src="/images/qr-photo.png"
           alt="QR Code"
-          width={450}
-          height={450}
-          className="rounded-lg"
+          width={430}
+          height={430}
+          className="rounded"
         />
       </div>
     </>
   );
 }
+
