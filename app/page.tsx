@@ -436,7 +436,6 @@
 "use client";
 import dynamic from "next/dynamic";
 
-
 const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
 const CardContent = dynamic(() => import("@/components/Card/CardContent"));
 const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
@@ -491,7 +490,7 @@ export default function Chat() {
 
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   //----
-  const [isInIframe, setIsInIframe] = useState(false); 
+  const [isInIframe, setIsInIframe] = useState(false);
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -515,20 +514,18 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-
   //----
   useEffect(() => {
-  
     try {
-      setIsInIframe(window.self !== window.top);
+      const isIframe = window.self !== window.top;
+      setIsInIframe(isIframe);
+      setShowIcons(isIframe || showIcons);
     } catch (e) {
       setIsInIframe(true);
+      setShowIcons(true);
       console.error("Error checking iframe status:", e);
     }
-    if (isInIframe) {
-      setShowIcons(true);
-    }
-  }, [isInIframe]);
+  }, [showIcons]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -662,9 +659,13 @@ export default function Chat() {
     ] || translations.en;
 
   return (
-    
-    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
-      
+    <div
+      className={`${
+        isInIframe
+          ? "w-full h-full bg-transparent p-0"
+          : "flex flex-col min-h-screen"
+      }`}
+    >
       <TooltipProvider>
         {!showIcons && !isInIframe && (
           <div
@@ -701,7 +702,6 @@ export default function Chat() {
           </div>
         )}
 
-      
         {showIcons && (
           <div className="fixed bottom-2 z-50 right-4  w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-surface-container-low rounded-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
@@ -788,17 +788,20 @@ export default function Chat() {
             className={`fixed z-50 ${
               isMaximized
                 ? "inset-0 bottom-0 p-0 animate-fadeIn"
-                : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
+                : "bottom-20 right-4 animate-scaleIn"
             }`}
             style={{
-              width: isMaximized ? "100%" : "95%",
+              width: isMaximized ? "100%" : isInIframe ? "100%" : "95%",
+              maxWidth: isMaximized ? "none" : "500px",
               height: isMaximized ? "100vh" : "auto",
               borderRadius: isMaximized ? "0" : "12px",
             }}
           >
             <Card
               className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out
-          ${isMaximized ? "h-full rounded-none" : "h-auto rounded-[20px]"}`}
+                ${
+                  isMaximized ? "h-full rounded-none" : "h-auto rounded-[20px]"
+                }`}
             >
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
@@ -871,10 +874,6 @@ export default function Chat() {
     </div>
   );
 }
-
-
-
-
 
 
 
