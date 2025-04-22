@@ -529,7 +529,7 @@ export default function Chat() {
 
  
  
-function sendMessageToParent(state) {
+function sendMessageToParent(state:string) {
   if (window.self !== window.top) {
     try {
       window.parent.postMessage({
