@@ -6,8 +6,8 @@
   iframe.style.position = 'fixed';
   iframe.style.bottom = '0';
   iframe.style.right = '2px';
-  iframe.style.width = '100%'; 
-  iframe.style.height = '100%'; 
+  iframe.style.width = '100vh'; 
+  iframe.style.height = '100vh'; 
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '9999';
