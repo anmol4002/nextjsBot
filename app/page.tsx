@@ -481,27 +481,31 @@
 
 "use client";
 import dynamic from "next/dynamic";
+
+const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
+const CardContent = dynamic(() => import("@/components/Card/CardContent"));
+const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
+const PrivacyPolicyModal = dynamic(
+  () => import("@/components/PrivacyPolicyModal")
+);
+const QRCard = dynamic(() => import("@/components/Card/QRCard"));
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
-import { useCustomChat } from "@/hooks/useCustomChat";
-import { translations, departmentTranslations } from "@/lib/mapping";
+import { Toast } from "@/components/Toast";
+import { TRANSLATIONS } from "@/lib/mapping";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Card } from "@/components/ui/card";
 
-// Dynamic imports to improve initial load performance
-const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
-const CardContent = dynamic(() => import("@/components/Card/CardContent"));
-const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
-const PrivacyPolicyModal = dynamic(() => import("@/components/PrivacyPolicyModal"));
-const QRCard = dynamic(() => import("@/components/Card/QRCard"));
-const Toast = dynamic(() => import("@/components/Toast"));
+import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
+
+import { useCustomChat } from "@/hooks/useCustomChat";
+import { translations, departmentTranslations } from "@/lib/mapping";
 
 interface Toast {
   message: string;
@@ -525,25 +529,18 @@ const getDepartmentInfo = (
 };
 
 export default function Chat() {
-  // State management
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isInIframe, setIsInIframe] = useState(false);
-  const [language, setLanguage] = useState("auto");
-  const [showQRImage, setShowQRImage] = useState(false);
-  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
-  const [mountAnimationComplete, setMountAnimationComplete] = useState(false);
 
-  // Refs
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Custom hook for chat functionality
+  const [showQRImage, setShowQRImage] = useState(false);
+  const [language, setLanguage] = useState("auto");
   const {
     messages,
     input,
@@ -559,20 +556,10 @@ export default function Chat() {
   } = useCustomChat(language);
 
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-  // Determine if running in iframe
-  useEffect(() => {
-    setIsInIframe(window.self !== window.top);
-    
-    // Initialization animation
-    setTimeout(() => {
-      setMountAnimationComplete(true);
-    }, 500);
-  }, []);
-
-  // Post messages to parent iframe
   function sendMessageToParent(state: string) {
-    if (isInIframe) {
+    if (window.self !== window.top) {
       try {
         window.parent.postMessage(
           {
@@ -587,7 +574,6 @@ export default function Chat() {
     }
   }
 
-  // Update parent iframe on state changes
   useEffect(() => {
     if (isInIframe) {
       let currentState = "icon";
@@ -601,7 +587,6 @@ export default function Chat() {
     }
   }, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
 
-  // Handle clicks outside language dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -618,31 +603,27 @@ export default function Chat() {
     };
   }, []);
 
-  // Toggle chat window
   const toggleChat = () => {
     const newChatState = !isChatOpen;
     setIsChatOpen(newChatState);
     setIsMaximized(false);
     setShowQRImage(false);
+    setShowIcons(true); // Keep icons visible when chat is opened
     
     if (newChatState) {
-      setShowIcons(false); // Hide icons when chat is opened
       sendMessageToParent("chat");
       sendInitialMessages();
     } else {
-      setShowIcons(true);
       sendMessageToParent("icons");
     }
   };
 
-  // Close chat and show icons
   const handleCloseChat = () => {
     setIsChatOpen(false);
-    setShowIcons(true);
+    setShowIcons(true); // Show icons when chat is closed
     sendMessageToParent("icons");
   };
 
-  // Handle language changes
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
     setToast({
@@ -653,7 +634,6 @@ export default function Chat() {
       type: "loading",
       icon: <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />,
     } as Toast);
-    
     try {
       setLanguage(selectedLanguage);
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -682,29 +662,23 @@ export default function Chat() {
 
   const getLanguageLabel = (lang: string) => {
     switch (lang) {
-      case "en": return "English";
-      case "pa": return "ਪੰਜਾਬੀ";
-      case "hi": return "हिंदी";
-      case "auto": return "Auto";
-      default: return "Auto";
+      case "en":
+        return "English";
+      case "pa":
+        return "ਪੰਜਾਬੀ";
+      case "hi":
+        return "हिंदी";
+      case "auto":
+        return "Auto";
+      default:
+        return "Auto";
     }
   };
 
-  // Handle form submission
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await handleSubmit(e, input);
-      
-      // Smooth scroll to bottom after message is sent
-      if (chatContainerRef.current) {
-        setTimeout(() => {
-          chatContainerRef.current?.scrollTo({
-            top: chatContainerRef.current.scrollHeight,
-            behavior: "smooth"
-          });
-        }, 100);
-      }
     } catch (err) {
       console.error("Error in onSubmit:", err);
       setToast({
@@ -714,11 +688,9 @@ export default function Chat() {
     }
   };
 
-  // Toggle icons display
   const toggleIcons = () => {
     const newIconsState = !showIcons;
     setShowIcons(newIconsState);
-    
     if (newIconsState) {
       sendMessageToParent("icons");
     } else {
@@ -726,7 +698,6 @@ export default function Chat() {
     }
   };
 
-  // Toggle maximize/restore chat window
   const handleMaximize = () => {
     setIsMaximized(true);
     sendMessageToParent("maximized");
@@ -737,7 +708,6 @@ export default function Chat() {
     sendMessageToParent("chat");
   };
 
-  // Reset chat and unlock department
   const handleResetChat = () => {
     resetChat();
     setIsDepartmentLocked(false);
@@ -746,15 +716,14 @@ export default function Chat() {
     }
   };
 
-  // External communication handlers
-  const handleWhatsAppClick = () => window.open("https://wa.me/919855501076", "_blank");
+  const handleWhatsAppClick = () =>
+    window.open("https://wa.me/919855501076", "_blank");
+
   const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
 
-  // QR code handlers
   const handleQRClick = () => {
     setIsChatOpen(true);
     setShowQRImage(true);
-    setShowIcons(false);
     setIsMaximized(false);
     sendMessageToParent("qr");
   };
@@ -762,11 +731,10 @@ export default function Chat() {
   const handleCloseQR = () => {
     setShowQRImage(false);
     setIsChatOpen(false);
-    setShowIcons(true);
+    setShowIcons(true); // Show icons when QR is closed
     sendMessageToParent("icons");
   };
 
-  // Send department selection message
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
@@ -776,7 +744,6 @@ export default function Chat() {
     setIsDepartmentLocked(true);
   };
 
-  // Get translations
   const t =
     translations[
       language === "auto" ? "en" : (language as keyof typeof translations)
@@ -784,15 +751,13 @@ export default function Chat() {
 
   return (
     <div
-      ref={containerRef}
       className={`${isInIframe ? "pt-0 bg-transparent" : "flex flex-col min-h-screen"}`}
     >
       <TooltipProvider>
-        {/* Main chat icon when nothing is open */}
         {!showIcons && !isChatOpen && (
           <div
             className={`fixed bottom-4 right-6 z-50 ${
-              mountAnimationComplete ? "animate-fadeInUp" : "opacity-0"
+              !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
             }`}
           >
             <Tooltip>
@@ -804,17 +769,26 @@ export default function Chat() {
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
                   aria-label="Toggle chat icons"
                 >
-                  <MessageCircle size={28} className="w-7 h-7" />
+                  <div
+                    className={`transition-transform duration-500 ease-out ${
+                      showIcons ? "rotate-180" : "rotate-0"
+                    }`}
+                  >
+                    {showIcons ? (
+                      <ArrowDownCircle size={28} className="w-7 h-7" />
+                    ) : (
+                      <MessageCircle size={28} className="w-7 h-7" />
+                    )}
+                  </div>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top" className="bg-gray-800 text-white">
-                <p>Punjab Govt. Chatbot</p>
+                <p>{"Punjab Govt. Chatbot"}</p>
               </TooltipContent>
             </Tooltip>
           </div>
         )}
 
-        {/* Icons bar */}
         {showIcons && (
           <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
@@ -893,7 +867,6 @@ export default function Chat() {
           </div>
         )}
 
-        {/* Chat window */}
         {isChatOpen && (
           <div
             className={`fixed z-50 ${
@@ -904,33 +877,32 @@ export default function Chat() {
             style={{
               width: isMaximized ? "100%" : "95%",
               height: isMaximized ? "100vh" : "auto",
-              maxHeight: isMaximized ? "100vh" : "80vh",
               borderRadius: isMaximized ? "0" : "12px",
-              display: "flex",
-              flexDirection: "column",
             }}
           >
             <Card
-              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out flex flex-col ${
-                isMaximized ? "maximized-chat h-full" : "h-[600px] max-h-[80vh] sm:h-[700px]"
+              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out ${
+                isMaximized ? "maximized-chat" : ""
               }`}
             >
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
               ) : (
                 <>
-                  <CardHeader
-                    title={t.chatTitle}
-                    emoji={departmentInfo.emoji}
-                    name={departmentInfo.name}
-                    isMaximized={isMaximized}
-                    onMaximize={handleMaximize}
-                    onRestore={handleRestore}
-                    onReset={handleResetChat}
-                    onClose={handleCloseChat}
-                  />
+                  <div>
+                    <CardHeader
+                      title={t.chatTitle}
+                      emoji={departmentInfo.emoji}
+                      name={departmentInfo.name}
+                      isMaximized={isMaximized}
+                      onMaximize={handleMaximize}
+                      onRestore={handleRestore}
+                      onReset={handleResetChat}
+                      onClose={handleCloseChat}
+                    />
+                  </div>
 
-                  <div className="flex-grow overflow-hidden">
+                  <div className="m-4 p-0 w-full">
                     <CardContent
                       messages={messages}
                       chatContainerRef={chatContainerRef}
@@ -938,32 +910,37 @@ export default function Chat() {
                       t={t}
                       isDepartmentLocked={isDepartmentLocked}
                       sendDepartmentMessage={sendDepartmentMessage}
-                      translations={translations}
+                      TRANSLATIONS={TRANSLATIONS}
                       language={language}
                       setIsPolicyModalOpen={setIsPolicyModalOpen}
                     />
                   </div>
 
-                  <CardFooter
-                    input={input}
-                    isLoading={isLoading}
-                    language={language}
-                    isLanguageDropdownOpen={isLanguageDropdownOpen}
-                    onInputChange={handleInputChange}
-                    onSubmit={onSubmit}
-                    onLanguageChange={handleLanguageChange}
-                    onToggleLanguageDropdown={toggleLanguageDropdown}
-                    getLanguageLabel={getLanguageLabel}
-                    t={t}
-                    languageDropdownRef={languageDropdownRef}
-                  />
+                  <div
+                    className={`${
+                      isMaximized ? "absolute bottom-0 left-0 right-0" : ""
+                    }`}
+                  >
+                    <CardFooter
+                      input={input}
+                      isLoading={isLoading}
+                      language={language}
+                      isLanguageDropdownOpen={isLanguageDropdownOpen}
+                      onInputChange={handleInputChange}
+                      onSubmit={onSubmit}
+                      onLanguageChange={handleLanguageChange}
+                      onToggleLanguageDropdown={toggleLanguageDropdown}
+                      getLanguageLabel={getLanguageLabel}
+                      t={t}
+                      languageDropdownRef={languageDropdownRef}
+                    />
+                  </div>
                 </>
               )}
             </Card>
           </div>
         )}
 
-        {/* Toast notifications */}
         {toast && (
           <Toast
             message={toast.message}
@@ -971,8 +948,6 @@ export default function Chat() {
             onClose={() => setToast(null)}
           />
         )}
-        
-        {/* Privacy policy modal */}
         <PrivacyPolicyModal
           isOpen={isPolicyModalOpen}
           onClose={() => setIsPolicyModalOpen(false)}
@@ -981,4 +956,7 @@ export default function Chat() {
     </div>
   );
 }
+
+
+
 
