@@ -16,7 +16,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Add these meta tags for iframe compatibility */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="format-detection" content="telephone=no" />
