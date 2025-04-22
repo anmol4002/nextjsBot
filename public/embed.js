@@ -51,87 +51,81 @@
   if (document.getElementById('punjab-govt-chatbot-iframe')) {
     return;
   }
-  
+
   var container = document.createElement('div');
   container.id = 'punjab-govt-chatbot-container';
   container.style.position = 'fixed';
   container.style.bottom = '0';
   container.style.right = '0';
   container.style.zIndex = '9999';
-  container.style.pointerEvents = 'none';
-  container.style.transition = 'all 0.3s ease-in-out';
-  container.style.width = 'auto';
+  container.style.width = '100%';
+  container.style.maxWidth = '400px'; // Default max width
   container.style.height = 'auto';
-  
+  container.style.pointerEvents = 'none';
+
   var iframe = document.createElement('iframe');
   iframe.id = 'punjab-govt-chatbot-iframe';
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.maxWidth = '625px';
-  iframe.style.maxHeight = '600px';
+  iframe.style.height = '600px';
+  iframe.style.maxHeight = '100vh';
   iframe.style.pointerEvents = 'auto';
-  iframe.style.transition = 'all 0.3s ease-in-out';
+  iframe.style.borderRadius = '12px 12px 0 0';
+  iframe.style.boxShadow = '0 -2px 10px rgba(0,0,0,0.1)';
   iframe.title = 'Punjab Government Chatbot';
-  
+
   container.appendChild(iframe);
   document.body.appendChild(container);
-  
-  // Create a resize observer to handle viewport changes
-  const resizeObserver = new ResizeObserver(entries => {
-    for (let entry of entries) {
-      const viewportWidth = entry.contentRect.width;
-      // Adjust for small screens
-      if (viewportWidth < 640) {
-        iframe.style.maxWidth = '100%';
-        container.style.width = '100%';
-      } else {
-        iframe.style.maxWidth = '625px';
-        container.style.width = 'auto';
-      }
+
+  // Handle responsive behavior
+  function handleResize() {
+    if (window.innerWidth < 768) {
+      container.style.maxWidth = '100%';
+      container.style.right = '0';
+      container.style.bottom = '0';
+    } else {
+      container.style.maxWidth = '400px';
+      container.style.right = '20px';
+      container.style.bottom = '20px';
     }
-  });
-  
-  // Observe the document body for size changes
-  resizeObserver.observe(document.body);
-  
+  }
+
+  window.addEventListener('resize', handleResize);
+  handleResize(); // Initial call
+
   window.addEventListener('message', function(event) {
     if (event.origin !== 'https://nextjs-bot-ten.vercel.app') {
       return;
     }
-    
-    switch(event.data.type) {
-      case 'chatOpen':
-        container.style.pointerEvents = 'auto';
-        break;
-      
-      case 'chatClosed':
-        container.style.pointerEvents = 'none';
-        break;
-      
-      case 'maximize':
-        iframe.style.maxWidth = 'none';
-        iframe.style.maxHeight = 'none';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.top = '0';
-        container.style.left = '0';
-        container.style.right = '0';
-        container.style.bottom = '0';
-        break;
-      
-      case 'restore':
-        iframe.style.maxWidth = '625px';
-        iframe.style.maxHeight = '600px';
-        container.style.width = 'auto';
-        container.style.height = 'auto';
-        container.style.top = 'auto';
-        container.style.left = 'auto';
-        container.style.right = '0';
-        container.style.bottom = '0';
-        break;
+
+    if (event.data.type === 'chatOpen') {
+      container.style.pointerEvents = 'auto';
+      iframe.style.pointerEvents = 'auto';
+    } else if (event.data.type === 'chatClosed') {
+      container.style.pointerEvents = 'none';
+      iframe.style.pointerEvents = 'none';
+    } else if (event.data.type === 'maximize') {
+      container.style.width = '100%';
+      container.style.height = '100%';
+      container.style.maxWidth = 'none';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.right = 'auto';
+      container.style.bottom = 'auto';
+      iframe.style.height = '100%';
+      iframe.style.borderRadius = '0';
+    } else if (event.data.type === 'restore') {
+      container.style.width = '100%';
+      container.style.maxWidth = window.innerWidth < 768 ? '100%' : '400px';
+      container.style.height = 'auto';
+      container.style.top = 'auto';
+      container.style.left = 'auto';
+      container.style.right = window.innerWidth < 768 ? '0' : '20px';
+      container.style.bottom = window.innerWidth < 768 ? '0' : '20px';
+      iframe.style.height = '600px';
+      iframe.style.borderRadius = '12px 12px 0 0';
     }
   });
 })();
