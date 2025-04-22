@@ -529,37 +529,33 @@ export default function Chat() {
 
  
  
-useEffect(() => {
-  if (isInIframe) {
-   
-    const sendStateToParent = () => {
-      let state = 'icon';
-      if (showIcons) state = 'icons';
-      if (isChatOpen && !isMaximized) state = 'chat';
-      if (isMaximized) state = 'maximized';
-      
+function sendMessageToParent(state) {
+  if (window.self !== window.top) {
+    try {
       window.parent.postMessage({
         type: 'widgetState',
         state: state
-      }, '*');  
-    };
-    
-  
-    sendStateToParent();
-    
-   
-    const stateChangeEvents = [
-      () => setShowIcons(prev => { sendStateToParent(); return prev; }),
-      () => setIsChatOpen(prev => { sendStateToParent(); return prev; }),
-      () => setIsMaximized(prev => { sendStateToParent(); return prev; })
-    ];
-    
-
-    return () => {
-      
-    };
+      }, '*'); 
+    } catch (e) {
+      console.error('Error sending message to parent:', e);
+    }
   }
-}, [isInIframe, showIcons, isChatOpen, isMaximized]);
+}
+
+
+useEffect(() => {
+  if (isInIframe) {
+   
+    let currentState = 'icon';
+    if (!showIcons && !isChatOpen) currentState = 'icon';
+    if (showIcons) currentState = 'icons';
+    if (isChatOpen && !isMaximized && !showQRImage) currentState = 'chat';
+    if (isMaximized) currentState = 'maximized';
+    if (showQRImage) currentState = 'qr';
+    
+    sendMessageToParent(currentState);
+  }
+}, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -577,15 +573,19 @@ useEffect(() => {
     };
   }, []);
 
-  const toggleChat = () => {
-    setIsChatOpen((prev) => !prev);
-    setIsMaximized(false);
-    setShowQRImage(false);
-
-    if (!isChatOpen) {
-      sendInitialMessages();
-    }
-  };
+ const toggleChat = () => {
+  const newChatState = !isChatOpen;
+  setIsChatOpen(newChatState);
+  setIsMaximized(false);
+  setShowQRImage(false);
+  
+  if (newChatState) {
+    sendMessageToParent('chat');
+    sendInitialMessages();
+  } else {
+    sendMessageToParent('icon');
+  }
+};
 
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
@@ -651,9 +651,27 @@ useEffect(() => {
     }
   };
 
-  const toggleIcons = () => setShowIcons((prev) => !prev);
-  const handleMaximize = () => setIsMaximized(true);
-  const handleRestore = () => setIsMaximized(false);
+  const toggleIcons = () => {
+  const newIconsState = !showIcons;
+  setShowIcons(newIconsState);
+  if (newIconsState) {
+    sendMessageToParent('icons');
+  } else {
+    sendMessageToParent('icon');
+  }
+};
+
+
+const handleMaximize = () => {
+  setIsMaximized(true);
+  sendMessageToParent('maximized');
+};
+
+const handleRestore = () => {
+  setIsMaximized(false);
+  sendMessageToParent('chat');
+};
+
 
   
   const handleResetChat = () => {
@@ -670,15 +688,19 @@ useEffect(() => {
   const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
 
   const handleQRClick = () => {
-    setIsChatOpen(true);
-    setShowQRImage(true);
-    setIsMaximized(false);
-  };
+  setIsChatOpen(true);
+  setShowQRImage(true);
+  setIsMaximized(false);
+  sendMessageToParent('qr');
+};
 
-  const handleCloseQR = () => {
-    setShowQRImage(false);
-    setIsChatOpen(false);
-  };
+// Update handleCloseQR function
+const handleCloseQR = () => {
+  setShowQRImage(false);
+  setIsChatOpen(false);
+  sendMessageToParent('icon');
+};
+ 
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
@@ -830,8 +852,9 @@ useEffect(() => {
             }}
           >
             <Card
-              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out
-         `}
+              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out ${
+    isMaximized ? 'maximized-chat' : ''
+  }`}
             >
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
