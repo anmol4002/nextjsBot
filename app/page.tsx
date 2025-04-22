@@ -439,6 +439,21 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client";
 import dynamic from "next/dynamic";
 
@@ -495,6 +510,7 @@ export default function Chat() {
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
 
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  //----
   const [isInIframe, setIsInIframe] = useState(false);
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
@@ -519,29 +535,18 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-  useEffect(() => {
+ 
+ 
+ useEffect(() => {
     try {
       setIsInIframe(window.self !== window.top);
     } catch (e) {
       setIsInIframe(true);
       console.error("Error checking iframe status:", e);
     }
-    
-    // For iframe mode, auto-open chat immediately
-    if (window.self !== window.top) {
-      setIsChatOpen(true);
-      sendInitialMessages();
-    }
+   
   }, []);
 
-  // Send messages to parent window when maximizing/restoring
-  useEffect(() => {
-    if (isInIframe && isMaximized) {
-      window.parent.postMessage({ type: 'maximize-widget' }, '*');
-    } else if (isInIframe && !isMaximized && isChatOpen) {
-      window.parent.postMessage({ type: 'restore-widget' }, '*');
-    }
-  }, [isMaximized, isInIframe, isChatOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -560,18 +565,12 @@ export default function Chat() {
   }, []);
 
   const toggleChat = () => {
-    if (isInIframe) {
-      // In iframe mode, only toggle maximize/minimize
-      setIsMaximized((prev) => !prev);
-    } else {
-      // Normal behavior for non-iframe
-      setIsChatOpen((prev) => !prev);
-      setIsMaximized(false);
-      setShowQRImage(false);
+    setIsChatOpen((prev) => !prev);
+    setIsMaximized(false);
+    setShowQRImage(false);
 
-      if (!isChatOpen) {
-        sendInitialMessages();
-      }
+    if (!isChatOpen) {
+      sendInitialMessages();
     }
   };
 
@@ -640,15 +639,10 @@ export default function Chat() {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
-  
-  const handleMaximize = () => {
-    setIsMaximized(true);
-  };
-  
-  const handleRestore = () => {
-    setIsMaximized(false);
-  };
+  const handleMaximize = () => setIsMaximized(true);
+  const handleRestore = () => setIsMaximized(false);
 
+  
   const handleResetChat = () => {
     resetChat();
     setIsDepartmentLocked(false);
@@ -669,14 +663,9 @@ export default function Chat() {
   };
 
   const handleCloseQR = () => {
-    if (isInIframe) {
-      setShowQRImage(false);
-    } else {
-      setShowQRImage(false);
-      setIsChatOpen(false);
-    }
+    setShowQRImage(false);
+    setIsChatOpen(false);
   };
-  
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
@@ -691,25 +680,14 @@ export default function Chat() {
       language === "auto" ? "en" : (language as keyof typeof translations)
     ] || translations.en;
 
-  // Special layout handling for iframe mode
-  const getWidgetClasses = () => {
-    if (isInIframe) {
-      // For iframe mode
-      return `fixed bottom-0 right-0 w-full h-full bg-transparent`;
-    }
-    // For normal mode with maximization support
-    return isMaximized
-      ? "fixed inset-0 bottom-0 p-0 animate-fadeIn"
-      : "fixed bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn";
-  };
 
-  // Only show chat UI elements when in iframe mode
-  const showChatIconsInIframe = !isInIframe || (isInIframe && !isChatOpen);
 
   return (
+
     <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
+
       <TooltipProvider>
-        {showChatIconsInIframe && !showIcons && (
+        {!showIcons  && (
           <div
             className={`fixed bottom-4 right-6 z-50 ${
               !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
@@ -744,8 +722,8 @@ export default function Chat() {
           </div>
         )}
 
-        {showIcons && !isInIframe && (
-          <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
+        {showIcons && (
+          <div className="fixed bottom-2 z-50 right-4  w-[95%] max-w-[500px] mx-auto flex items-center justify-between  bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
               {[
                 {
@@ -827,17 +805,20 @@ export default function Chat() {
 
         {isChatOpen && (
           <div
-            className={getWidgetClasses()}
+            className={`fixed z-50 ${
+              isMaximized
+                ? "inset-0 bottom-0 p-0 animate-fadeIn"
+                : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
+            }`}
             style={{
-              width: isMaximized || isInIframe ? "100%" : "95%",
-              height: isMaximized || isInIframe ? "100vh" : "auto",
-              borderRadius: isMaximized || isInIframe ? "0" : "12px",
-              pointerEvents: "auto",
+              width: isMaximized ? "100%" : "95%",
+              height: isMaximized ? "100vh" : "auto",
+              borderRadius: isMaximized ? "0" : "12px",
             }}
           >
             <Card
-              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out 
-                ${isInIframe ? 'h-full flex flex-col' : ''}`}
+              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out
+         `}
             >
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
@@ -848,19 +829,19 @@ export default function Chat() {
                       title={t.chatTitle}
                       emoji={departmentInfo.emoji}
                       name={departmentInfo.name}
-                      isMaximized={isMaximized || isInIframe}
+                      isMaximized={isMaximized}
                       onMaximize={handleMaximize}
                       onRestore={handleRestore}
                       onReset={handleResetChat}
-                      onClose={isInIframe ? handleRestore : toggleChat}
+                      onClose={toggleChat}
                     />
                   </div>
 
-                  <div className={`m-4 p-0 w-full ${isInIframe ? 'flex-grow overflow-hidden' : ''}`}>
+                  <div className="m-4 p-0 w-full">
                     <CardContent
                       messages={messages}
                       chatContainerRef={chatContainerRef}
-                      isMaximized={isMaximized || isInIframe}
+                      isMaximized={isMaximized}
                       t={t}
                       isDepartmentLocked={isDepartmentLocked}
                       sendDepartmentMessage={sendDepartmentMessage}
@@ -872,7 +853,7 @@ export default function Chat() {
 
                   <div
                     className={`${
-                      isMaximized || isInIframe ? "w-full" : ""
+                      isMaximized ? "absolute bottom-0 left-0 right-0" : ""
                     }`}
                   >
                     <CardFooter
@@ -910,6 +891,7 @@ export default function Chat() {
     </div>
   );
 }
+
 
 
 
