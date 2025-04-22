@@ -87,10 +87,10 @@
     div.id = 'punjab-bot-container';
     div.style.cssText = `
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px; 
-      height: 60px;
+      bottom: 0;
+      right: 0;
+      width: 80px; 
+      height: 80px;
       pointer-events: none;
       z-index: 9999;
       transition: all 0.3s ease;
