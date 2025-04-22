@@ -438,14 +438,7 @@
 
 
 
-
-
-
-
-
-//-------------------------------------------------------------------------------------------------------------
-
-
+// -------------------------------------------------------------------------------------------------------
 // "use client";
 // import dynamic from "next/dynamic";
 
@@ -500,9 +493,7 @@
 //   const [showIcons, setShowIcons] = useState(false);
 //   const [isMaximized, setIsMaximized] = useState(false);
 //   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
-
 //   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-//   //----
 //   const [isInIframe, setIsInIframe] = useState(false);
 
 //   const chatIconRef = useRef<HTMLButtonElement>(null);
@@ -527,35 +518,34 @@
 //   const departmentInfo = getDepartmentInfo(language, currentDepartment);
 //   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
- 
- 
-// function sendMessageToParent(state:string) {
-//   if (window.self !== window.top) {
-//     try {
-//       window.parent.postMessage({
-//         type: 'widgetState',
-//         state: state
-//       }, '*'); 
-//     } catch (e) {
-//       console.error('Error sending message to parent:', e);
+//   function sendMessageToParent(state: string) {
+//     if (window.self !== window.top) {
+//       try {
+//         window.parent.postMessage(
+//           {
+//             type: "widgetState",
+//             state: state,
+//           },
+//           "*"
+//         );
+//       } catch (e) {
+//         console.error("Error sending message to parent:", e);
+//       }
 //     }
 //   }
-// }
 
+//   useEffect(() => {
+//     if (isInIframe) {
+//       let currentState = "icon";
+//       if (!showIcons && !isChatOpen) currentState = "icon";
+//       if (showIcons) currentState = "icons";
+//       if (isChatOpen && !isMaximized && !showQRImage) currentState = "chat";
+//       if (isMaximized) currentState = "maximized";
+//       if (showQRImage) currentState = "qr";
 
-// useEffect(() => {
-//   if (isInIframe) {
-   
-//     let currentState = 'icon';
-//     if (!showIcons && !isChatOpen) currentState = 'icon';
-//     if (showIcons) currentState = 'icons';
-//     if (isChatOpen && !isMaximized && !showQRImage) currentState = 'chat';
-//     if (isMaximized) currentState = 'maximized';
-//     if (showQRImage) currentState = 'qr';
-    
-//     sendMessageToParent(currentState);
-//   }
-// }, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
+//       sendMessageToParent(currentState);
+//     }
+//   }, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
 
 //   useEffect(() => {
 //     const handleClickOutside = (event: MouseEvent) => {
@@ -573,19 +563,26 @@
 //     };
 //   }, []);
 
-//  const toggleChat = () => {
-//   const newChatState = !isChatOpen;
-//   setIsChatOpen(newChatState);
-//   setIsMaximized(false);
-//   setShowQRImage(false);
-  
-//   if (newChatState) {
-//     sendMessageToParent('chat');
-//     sendInitialMessages();
-//   } else {
-//     sendMessageToParent('icon');
-//   }
-// };
+//   const toggleChat = () => {
+//     const newChatState = !isChatOpen;
+//     setIsChatOpen(newChatState);
+//     setIsMaximized(false);
+//     setShowQRImage(false);
+//     setShowIcons(true); // Keep icons visible when chat is opened
+    
+//     if (newChatState) {
+//       sendMessageToParent("chat");
+//       sendInitialMessages();
+//     } else {
+//       sendMessageToParent("icons");
+//     }
+//   };
+
+//   const handleCloseChat = () => {
+//     setIsChatOpen(false);
+//     setShowIcons(true); // Show icons when chat is closed
+//     sendMessageToParent("icons");
+//   };
 
 //   const handleLanguageChange = async (selectedLanguage: string) => {
 //     setIsLanguageDropdownOpen(false);
@@ -652,24 +649,24 @@
 //   };
 
 //   const toggleIcons = () => {
-//   const newIconsState = !showIcons;
-//   setShowIcons(newIconsState);
-//   if (newIconsState) {
-//     sendMessageToParent('icons');
-//   } else {
-//     sendMessageToParent('icon');
-//   }
-// };
-//  const handleMaximize = () => {
-//   setIsMaximized(true);
-//   sendMessageToParent('maximized');
-// };
+//     const newIconsState = !showIcons;
+//     setShowIcons(newIconsState);
+//     if (newIconsState) {
+//       sendMessageToParent("icons");
+//     } else {
+//       sendMessageToParent("icon");
+//     }
+//   };
 
+//   const handleMaximize = () => {
+//     setIsMaximized(true);
+//     sendMessageToParent("maximized");
+//   };
 
-// const handleRestore = () => {
-//   setIsMaximized(false);
-//   sendMessageToParent('chat');
-// };
+//   const handleRestore = () => {
+//     setIsMaximized(false);
+//     sendMessageToParent("chat");
+//   };
 
 //   const handleResetChat = () => {
 //     resetChat();
@@ -685,19 +682,19 @@
 //   const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
 
 //   const handleQRClick = () => {
-//   setIsChatOpen(true);
-//   setShowQRImage(true);
-//   setIsMaximized(false);
-//   sendMessageToParent('qr');
-// };
+//     setIsChatOpen(true);
+//     setShowQRImage(true);
+//     setIsMaximized(false);
+//     sendMessageToParent("qr");
+//   };
 
-// // Update handleCloseQR function
-// const handleCloseQR = () => {
-//   setShowQRImage(false);
-//   setIsChatOpen(false);
-//   sendMessageToParent('icon');
-// };
- 
+//   const handleCloseQR = () => {
+//     setShowQRImage(false);
+//     setIsChatOpen(false);
+//     setShowIcons(true); // Show icons when QR is closed
+//     sendMessageToParent("icons");
+//   };
+
 //   const sendDepartmentMessage = (department: string) => {
 //     const customEvent = {
 //       preventDefault: () => {},
@@ -712,14 +709,12 @@
 //       language === "auto" ? "en" : (language as keyof typeof translations)
 //     ] || translations.en;
 
-
-
 //   return (
-
-//     <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
-
+//     <div
+//       className={`${isInIframe ? "pt-0 bg-transparent" : "flex flex-col min-h-screen"}`}
+//     >
 //       <TooltipProvider>
-//         {!showIcons  && (
+//         {!showIcons && !isChatOpen && (
 //           <div
 //             className={`fixed bottom-4 right-6 z-50 ${
 //               !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
@@ -755,7 +750,7 @@
 //         )}
 
 //         {showIcons && (
-//           <div className="fixed bottom-2 z-50 right-4  w-[95%] max-w-[500px] mx-auto flex items-center justify-between  bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
+//           <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
 //             <div className="flex items-center space-x-1 sm:space-x-2">
 //               {[
 //                 {
@@ -801,10 +796,7 @@
 //                         />
 //                       </div>
 //                     </TooltipTrigger>
-//                     <TooltipContent
-//                       side="top"
-//                       className="bg-gray-800 text-white"
-//                     >
+//                     <TooltipContent side="top" className="bg-gray-800 text-white">
 //                       <p>{item.tooltip}</p>
 //                     </TooltipContent>
 //                   </Tooltip>
@@ -850,8 +842,8 @@
 //           >
 //             <Card
 //               className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out ${
-//     isMaximized ? 'maximized-chat' : ''
-//   }`}
+//                 isMaximized ? "maximized-chat" : ""
+//               }`}
 //             >
 //               {showQRImage ? (
 //                 <QRCard onClose={handleCloseQR} />
@@ -866,7 +858,7 @@
 //                       onMaximize={handleMaximize}
 //                       onRestore={handleRestore}
 //                       onReset={handleResetChat}
-//                       onClose={toggleChat}
+//                       onClose={handleCloseChat}
 //                     />
 //                   </div>
 
@@ -925,7 +917,8 @@
 //   );
 // }
 
-//------------------------------------------------------------------------------------------------------------------------
+
+
 
 
 
@@ -939,9 +932,7 @@ import dynamic from "next/dynamic";
 const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
 const CardContent = dynamic(() => import("@/components/Card/CardContent"));
 const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
-const PrivacyPolicyModal = dynamic(
-  () => import("@/components/PrivacyPolicyModal")
-);
+const PrivacyPolicyModal = dynamic(() => import("@/components/PrivacyPolicyModal"));
 const QRCard = dynamic(() => import("@/components/Card/QRCard"));
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
@@ -955,9 +946,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
-
 import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
-
 import { useCustomChat } from "@/hooks/useCustomChat";
 import { translations, departmentTranslations } from "@/lib/mapping";
 
@@ -989,12 +978,14 @@ export default function Chat() {
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isInIframe, setIsInIframe] = useState(false);
-
+  const [showQRImage, setShowQRImage] = useState(false);
+  const [language, setLanguage] = useState("auto");
+  const [animationClass, setAnimationClass] = useState("");
+  
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
-  const [showQRImage, setShowQRImage] = useState(false);
-  const [language, setLanguage] = useState("auto");
+  
   const {
     messages,
     input,
@@ -1012,35 +1003,40 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
+  // Check if we're in an iframe on mount
+  useEffect(() => {
+    setIsInIframe(window.self !== window.top);
+  }, []);
+
+  // Function to send messages to parent window
   function sendMessageToParent(state: string) {
     if (window.self !== window.top) {
       try {
-        window.parent.postMessage(
-          {
-            type: "widgetState",
-            state: state,
-          },
-          "*"
-        );
+        window.parent.postMessage({
+          type: 'widgetState',
+          state: state
+        }, '*'); 
       } catch (e) {
-        console.error("Error sending message to parent:", e);
+        console.error('Error sending message to parent:', e);
       }
     }
   }
 
+  // Update parent frame when widget state changes
   useEffect(() => {
     if (isInIframe) {
-      let currentState = "icon";
-      if (!showIcons && !isChatOpen) currentState = "icon";
-      if (showIcons) currentState = "icons";
-      if (isChatOpen && !isMaximized && !showQRImage) currentState = "chat";
-      if (isMaximized) currentState = "maximized";
-      if (showQRImage) currentState = "qr";
-
+      let currentState = 'icon';
+      if (!showIcons && !isChatOpen) currentState = 'icon';
+      if (showIcons) currentState = 'icons';
+      if (isChatOpen && !isMaximized && !showQRImage) currentState = 'chat';
+      if (isMaximized) currentState = 'maximized';
+      if (showQRImage) currentState = 'qr';
+      
       sendMessageToParent(currentState);
     }
   }, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
 
+  // Handle clicks outside language dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -1057,25 +1053,23 @@ export default function Chat() {
     };
   }, []);
 
+  // Toggle chat with animation
   const toggleChat = () => {
-    const newChatState = !isChatOpen;
-    setIsChatOpen(newChatState);
-    setIsMaximized(false);
-    setShowQRImage(false);
-    setShowIcons(true); // Keep icons visible when chat is opened
-    
-    if (newChatState) {
-      sendMessageToParent("chat");
+    if (!isChatOpen) {
+      setAnimationClass("animate-scaleIn");
+      setIsChatOpen(true);
+      setIsMaximized(false);
+      setShowQRImage(false);
+      sendMessageToParent('chat');
       sendInitialMessages();
     } else {
-      sendMessageToParent("icons");
+      setAnimationClass("animate-scaleOut");
+      // Allow animation to complete before closing
+      setTimeout(() => {
+        setIsChatOpen(false);
+        sendMessageToParent('icon');
+      }, 300);
     }
-  };
-
-  const handleCloseChat = () => {
-    setIsChatOpen(false);
-    setShowIcons(true); // Show icons when chat is closed
-    sendMessageToParent("icons");
   };
 
   const handleLanguageChange = async (selectedLanguage: string) => {
@@ -1088,6 +1082,7 @@ export default function Chat() {
       type: "loading",
       icon: <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />,
     } as Toast);
+    
     try {
       setLanguage(selectedLanguage);
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -1116,16 +1111,11 @@ export default function Chat() {
 
   const getLanguageLabel = (lang: string) => {
     switch (lang) {
-      case "en":
-        return "English";
-      case "pa":
-        return "ਪੰਜਾਬੀ";
-      case "hi":
-        return "हिंदी";
-      case "auto":
-        return "Auto";
-      default:
-        return "Auto";
+      case "en": return "English";
+      case "pa": return "ਪੰਜਾਬੀ";
+      case "hi": return "हिंदी";
+      case "auto": return "Auto";
+      default: return "Auto";
     }
   };
 
@@ -1142,24 +1132,39 @@ export default function Chat() {
     }
   };
 
+  // Toggle icons with animation
   const toggleIcons = () => {
-    const newIconsState = !showIcons;
-    setShowIcons(newIconsState);
-    if (newIconsState) {
-      sendMessageToParent("icons");
+    if (!showIcons) {
+      setShowIcons(true);
+      sendMessageToParent('icons');
     } else {
-      sendMessageToParent("icon");
+      // Add exit animation class
+      const iconsElement = document.querySelector('.icons-container');
+      if (iconsElement) {
+        iconsElement.classList.add('animate-slideOutRight');
+        
+        // Wait for animation to complete
+        setTimeout(() => {
+          setShowIcons(false);
+          sendMessageToParent('icon');
+        }, 300);
+      } else {
+        setShowIcons(false);
+        sendMessageToParent('icon');
+      }
     }
   };
-
+  
   const handleMaximize = () => {
+    setAnimationClass("animate-expandFull");
     setIsMaximized(true);
-    sendMessageToParent("maximized");
+    sendMessageToParent('maximized');
   };
 
   const handleRestore = () => {
+    setAnimationClass("animate-contractToNormal");
     setIsMaximized(false);
-    sendMessageToParent("chat");
+    sendMessageToParent('chat');
   };
 
   const handleResetChat = () => {
@@ -1170,8 +1175,7 @@ export default function Chat() {
     }
   };
 
-  const handleWhatsAppClick = () =>
-    window.open("https://wa.me/919855501076", "_blank");
+  const handleWhatsAppClick = () => window.open("https://wa.me/919855501076", "_blank");
 
   const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
 
@@ -1179,16 +1183,18 @@ export default function Chat() {
     setIsChatOpen(true);
     setShowQRImage(true);
     setIsMaximized(false);
-    sendMessageToParent("qr");
+    sendMessageToParent('qr');
   };
 
   const handleCloseQR = () => {
-    setShowQRImage(false);
-    setIsChatOpen(false);
-    setShowIcons(true); // Show icons when QR is closed
-    sendMessageToParent("icons");
+    setAnimationClass("animate-fadeOut");
+    setTimeout(() => {
+      setShowQRImage(false);
+      setIsChatOpen(false);
+      sendMessageToParent('icon');
+    }, 300);
   };
-
+ 
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
@@ -1198,22 +1204,25 @@ export default function Chat() {
     setIsDepartmentLocked(true);
   };
 
-  const t =
-    translations[
-      language === "auto" ? "en" : (language as keyof typeof translations)
-    ] || translations.en;
+  const t = translations[
+    language === "auto" ? "en" : (language as keyof typeof translations)
+  ] || translations.en;
+
+  // CSS classes specifically for iframe mode
+  const iframeClasses = isInIframe ? 
+    'pt-0 bg-transparent iframe-mode' : 
+    'flex flex-col min-h-screen';
+
+  // Calculate animation classes
+  const chatAnimationClass = isChatOpen ? animationClass || "animate-scaleIn" : "animate-fadeOut";
+  const iconsAnimationClass = showIcons ? "animate-slideInRight icons-container" : "animate-slideOutRight";
 
   return (
-    <div
-      className={`${isInIframe ? "pt-0 bg-transparent" : "flex flex-col min-h-screen"}`}
-    >
+    <div className={iframeClasses}>
       <TooltipProvider>
-        {!showIcons && !isChatOpen && (
-          <div
-            className={`fixed bottom-4 right-6 z-50 ${
-              !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
-            }`}
-          >
+        {/* Main chat button */}
+        {!showIcons && (
+          <div className={`fixed bottom-4 right-6 z-50 ${!showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"}`}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -1223,11 +1232,7 @@ export default function Chat() {
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
                   aria-label="Toggle chat icons"
                 >
-                  <div
-                    className={`transition-transform duration-500 ease-out ${
-                      showIcons ? "rotate-180" : "rotate-0"
-                    }`}
-                  >
+                  <div className={`transition-transform duration-500 ease-out ${showIcons ? "rotate-180" : "rotate-0"}`}>
                     {showIcons ? (
                       <ArrowDownCircle size={28} className="w-7 h-7" />
                     ) : (
@@ -1243,8 +1248,9 @@ export default function Chat() {
           </div>
         )}
 
+        {/* Icons row */}
         {showIcons && (
-          <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
+          <div className={`fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 ${iconsAnimationClass}`}>
             <div className="flex items-center space-x-1 sm:space-x-2">
               {[
                 {
@@ -1298,10 +1304,7 @@ export default function Chat() {
               ))}
             </div>
 
-            <div
-              className="animate-iconAppear flex-shrink-0 ml-1"
-              style={{ animationDelay: "0.4s" }}
-            >
+            <div className="animate-iconAppear flex-shrink-0 ml-1" style={{ animationDelay: "0.4s" }}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -1321,24 +1324,24 @@ export default function Chat() {
           </div>
         )}
 
+        {/* Chat window */}
         {isChatOpen && (
           <div
             className={`fixed z-50 ${
               isMaximized
                 ? "inset-0 bottom-0 p-0 animate-fadeIn"
-                : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
-            }`}
+                : "bottom-20 right-4 w-[95%] max-w-[500px]"
+            } ${chatAnimationClass}`}
             style={{
               width: isMaximized ? "100%" : "95%",
               height: isMaximized ? "100vh" : "auto",
               borderRadius: isMaximized ? "0" : "12px",
+              transformOrigin: "bottom right",
             }}
           >
-            <Card
-              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out ${
-                isMaximized ? "maximized-chat" : ""
-              }`}
-            >
+            <Card className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out ${
+              isMaximized ? 'h-full maximized-chat' : ''
+            } ${isInIframe ? 'iframe-card' : ''}`}>
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
               ) : (
@@ -1352,7 +1355,7 @@ export default function Chat() {
                       onMaximize={handleMaximize}
                       onRestore={handleRestore}
                       onReset={handleResetChat}
-                      onClose={handleCloseChat}
+                      onClose={toggleChat}
                     />
                   </div>
 
@@ -1370,11 +1373,7 @@ export default function Chat() {
                     />
                   </div>
 
-                  <div
-                    className={`${
-                      isMaximized ? "absolute bottom-0 left-0 right-0" : ""
-                    }`}
-                  >
+                  <div className={`${isMaximized ? "absolute bottom-0 left-0 right-0" : ""}`}>
                     <CardFooter
                       input={input}
                       isLoading={isLoading}
@@ -1395,6 +1394,7 @@ export default function Chat() {
           </div>
         )}
 
+        {/* Toast notifications */}
         {toast && (
           <Toast
             message={toast.message}
@@ -1402,6 +1402,8 @@ export default function Chat() {
             onClose={() => setToast(null)}
           />
         )}
+        
+        {/* Privacy policy modal */}
         <PrivacyPolicyModal
           isOpen={isPolicyModalOpen}
           onClose={() => setIsPolicyModalOpen(false)}
