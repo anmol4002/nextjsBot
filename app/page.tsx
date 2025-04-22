@@ -651,17 +651,17 @@ useEffect(() => {
     }
   };
 
-  const toggleIcons = () => {
-  const newIconsState = !showIcons;
-  setShowIcons(newIconsState);
-  if (newIconsState) {
-    sendMessageToParent('icons');
-  } else {
-    sendMessageToParent('icon');
-  }
-};
+//   const toggleIcons = () => {
+//   const newIconsState = !showIcons;
+//   setShowIcons(newIconsState);
+//   if (newIconsState) {
+//     sendMessageToParent('icons');
+//   } else {
+//     sendMessageToParent('icon');
+//   }
+// };
 
-
+ const toggleIcons = () => setShowIcons((prev)=>!prev);
 const handleMaximize = () => {
   setIsMaximized(true);
   sendMessageToParent('maximized');
