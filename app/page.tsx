@@ -529,16 +529,37 @@ export default function Chat() {
 
  
  
- useEffect(() => {
-    try {
-      setIsInIframe(window.self !== window.top);
-    } catch (e) {
-      setIsInIframe(true);
-      console.error("Error checking iframe status:", e);
-    }
+useEffect(() => {
+  if (isInIframe) {
    
-  }, []);
+    const sendStateToParent = () => {
+      let state = 'icon';
+      if (showIcons) state = 'icons';
+      if (isChatOpen && !isMaximized) state = 'chat';
+      if (isMaximized) state = 'maximized';
+      
+      window.parent.postMessage({
+        type: 'widgetState',
+        state: state
+      }, '*');  
+    };
+    
+  
+    sendStateToParent();
+    
+   
+    const stateChangeEvents = [
+      () => setShowIcons(prev => { sendStateToParent(); return prev; }),
+      () => setIsChatOpen(prev => { sendStateToParent(); return prev; }),
+      () => setIsMaximized(prev => { sendStateToParent(); return prev; })
+    ];
+    
 
+    return () => {
+      
+    };
+  }
+}, [isInIframe, showIcons, isChatOpen, isMaximized]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
