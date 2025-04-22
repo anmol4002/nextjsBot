@@ -70,7 +70,6 @@
 
 
 
-
 (function() {
   // Create container for the widget
   var container = document.createElement('div');
@@ -85,6 +84,7 @@
   container.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
   container.style.overflow = 'hidden';
   container.style.boxShadow = '0 0 0 rgba(0, 0, 0, 0)';
+  container.style.transformOrigin = 'bottom right';
 
   // Create iframe
   var iframe = document.createElement('iframe');
@@ -124,6 +124,17 @@
       }
     }
     
+    @keyframes scaleOut {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+    }
+    
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -142,6 +153,23 @@
       }
     }
     
+    @keyframes restoreAnimation {
+      0% {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+      }
+      100% {
+        width: 500px;
+        max-width: 95%;
+        height: 700px;
+        max-height: 80vh;
+        border-radius: 12px;
+      }
+    }
+    
     .punjab-bot-scale-in {
       animation: scaleIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -153,14 +181,21 @@
     .punjab-bot-slide-in {
       animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+    
+    .punjab-bot-restore {
+      animation: restoreAnimation 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
   `;
   document.head.appendChild(styleSheet);
 
-  // Maintain previous state to determine animation direction
-  var previousState = 'icon';
+  // Flag to track animation in progress
+  var animationInProgress = false;
 
   // Handle resize on window changes
   function handleResize() {
+    // Only handle resize if no animation is in progress
+    if (animationInProgress) return;
+    
     // Adjust container maximum dimensions based on viewport
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
@@ -181,7 +216,7 @@
   // Listen for window resize events
   window.addEventListener('resize', handleResize);
   
-
+  // Initial setup
   handleResize();
 
   // Listen for messages from iframe
@@ -190,104 +225,142 @@
     if (event.origin !== 'https://nextjs-bot-ten.vercel.app' && event.origin !== window.location.origin) return;
 
     if (event.data && event.data.type === 'widgetState') {
-      // Get current and new states
-      var currentState = container.dataset.state || 'icon';
-      var newState = event.data.state;
-      container.dataset.state = newState;
-  
-      container.className = '';
-   
-      switch(newState) {
-        case 'icon':
-          
-          applyStateTransition(container, {
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-          });
-          break;
-          
-        case 'icons':
-         
-          container.classList.add('punjab-bot-slide-in');
-          applyStateTransition(container, {
-            width: '500px',
-            maxWidth: '95%',
-            height: '80px',
-            borderRadius: '40px',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
-          });
-          break;
-          
-        case 'chat': 
-        
-          container.classList.add('punjab-bot-scale-in');
-          applyStateTransition(container, {
-            width: '500px',
-            maxWidth: '95%',
-            height: '700px',
-            maxHeight: '80vh',
-            borderRadius: '12px',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)'
-          });
-          break;
-          
-        case 'maximized':
-       
-          container.classList.add('punjab-bot-fade-in');
-          applyStateTransition(container, {
-            width: '100%',
-            height: '100%',
-            right: '0',
-            bottom: '0',
-            maxWidth: '100%',
-            maxHeight: '100%',
-            borderRadius: '0',
-            boxShadow: 'none'
-          }, true);
-          break;
-          
-        case 'qr':
-        
-          container.classList.add('punjab-bot-scale-in');
-          applyStateTransition(container, {
-            width: '500px',
-            maxWidth: '95%',
-            height: '600px',
-            borderRadius: '12px',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
-          });
-          break;
+      // If animation is in progress, queue this state change
+      if (animationInProgress) {
+        setTimeout(() => {
+          handleStateChange(event.data.state);
+        }, 100);
+        return;
       }
-      
-      
-      previousState = newState;
-  
-      handleResize();
+
+      handleStateChange(event.data.state);
     }
   });
   
-
-  function applyStateTransition(element, styles, isMaximized) {
+  function handleStateChange(newState) {
+    // Get current state
+    var currentState = container.dataset.state || 'icon';
     
-    if (isMaximized) {
+    // Save current state for resize handler
+    container.dataset.state = newState;
+    
+    // Set animation flag
+    animationInProgress = true;
+    
+    // Special handling for maximized to chat transition
+    if (currentState === 'maximized' && newState === 'chat') {
+      // Clear any existing classes and use special restore animation
+      container.className = '';
+      container.classList.add('punjab-bot-restore');
       
-      element.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
-    } else {
-   
-      element.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      // Set proper box shadow
+      container.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.15)';
+      
+      // Wait for animation to complete
+      setTimeout(() => {
+        animationInProgress = false;
+        handleResize();
+      }, 500);
+      
+      return;
     }
     
+    // Remove any existing animation classes
+    container.className = '';
+    
+    // Handle different widget states with smoother transitions
+    switch(newState) {
+      case 'icon':
+        // Single chat icon state
+        applyStateTransition(container, {
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+        });
+        break;
+        
+      case 'icons':
+        // Expanded icons bar state
+        container.classList.add('punjab-bot-slide-in');
+        applyStateTransition(container, {
+          width: '500px',
+          maxWidth: '95%',
+          height: '80px',
+          borderRadius: '40px',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+        });
+        break;
+        
+      case 'chat': 
+        // Chat window state
+        container.classList.add('punjab-bot-scale-in');
+        applyStateTransition(container, {
+          width: '500px',
+          maxWidth: '95%',
+          height: '700px',
+          maxHeight: '80vh',
+          borderRadius: '12px',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)'
+        });
+        break;
+        
+      case 'maximized':
+        // Full screen chat state
+        container.classList.add('punjab-bot-fade-in');
+        applyStateTransition(container, {
+          width: '100%',
+          height: '100%',
+          right: '0',
+          bottom: '0',
+          maxWidth: '100%',
+          maxHeight: '100%',
+          borderRadius: '0',
+          boxShadow: 'none'
+        }, true);
+        break;
+        
+      case 'qr':
+        // QR code display state
+        container.classList.add('punjab-bot-scale-in');
+        applyStateTransition(container, {
+          width: '500px',
+          maxWidth: '95%',
+          height: '600px',
+          borderRadius: '12px',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
+        });
+        break;
+    }
+    
+    // Re-run resize logic to ensure proper dimensions after animation completes
+    setTimeout(() => {
+      animationInProgress = false;
+      handleResize();
+    }, 500);
+  }
+  
+  // Helper function to apply transitions
+  function applyStateTransition(element, styles, isMaximized) {
+    // Apply custom transition based on state change
+    if (isMaximized) {
+      // Use faster, more dramatic transition for maximizing
+      element.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+    } else {
+      // Use bounce-like easing for other transitions
+      element.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    }
+    
+    // Apply all styles
     for (var prop in styles) {
       element.style[prop] = styles[prop];
     }
   }
-
+  
+  // Initialize with a clean fade-in
   setTimeout(function() {
     container.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
     container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
   }, 300);
 })();
-
 
