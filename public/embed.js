@@ -152,14 +152,12 @@
   function handleResize() {
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    
-    // Adjust container for chat or QR mode
+
     if (container.dataset.state === 'chat' || container.dataset.state === 'qr') {
       const maxHeight = Math.min(800, viewportHeight * 0.95);
       container.style.maxHeight = maxHeight + 'px';
     }
-    
-    // Adjust for small screens in maximized mode
+
     if (container.dataset.state === 'maximized' && viewportWidth < 768) {
       container.style.width = '100%';
       container.style.height = '100%';
@@ -167,16 +165,16 @@
   }
   
   function handleMessages(event) {
-    // Security check
+
     if (event.origin !== 'https://nextjs-bot-ten.vercel.app' && event.origin !== window.location.origin) return;
 
     if (event.data && event.data.type === 'widgetState') {
-      // Update widget state
+
       const newState = event.data.state;
       container.dataset.state = newState;
       container.className = '';
       
-      // Apply styling based on widget state
+
       switch(newState) {
         case 'icon':
           applyStateStyles({
@@ -189,7 +187,7 @@
         case 'icons':
           container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '500px',
+            width: '600px',
             maxWidth: '95%',
             height: '80px',
             borderRadius: '30px'
@@ -199,7 +197,7 @@
         case 'chat':
           container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '500px',
+            width: '600px',
             maxWidth: '95%',
             height: '700px',
             maxHeight: '90vh',
@@ -223,7 +221,7 @@
         case 'qr':
           container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '500px',
+            width: '600px',
             maxWidth: '95%',
             height: '700px',
             borderRadius: '8px'
