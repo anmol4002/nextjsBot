@@ -70,7 +70,6 @@
           container.style.maxHeight = '95%';
           break;
         case 'maximized':
-          
           container.style.width = '100%';
           container.style.height = '100%';
           container.style.right = '0';
