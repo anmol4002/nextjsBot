@@ -55,7 +55,6 @@
     if (event.data && event.data.type === 'widgetState') {
       switch(event.data.state) {
         case 'icon':
-         
           container.style.width = '80px';
           container.style.height = '80px';
           break;
@@ -64,12 +63,11 @@
           container.style.maxWidth = '95%';
           container.style.height = '80px';
           break;
-        case 'chat':
-         
+        case 'chat': 
           container.style.width = '500px';
           container.style.maxWidth = '95%';
           container.style.height = '800px';
-          container.style.maxHeight = '90vh';
+          container.style.maxHeight = '95%';
           break;
         case 'maximized':
           
