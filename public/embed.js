@@ -180,8 +180,8 @@
       switch(newState) {
         case 'icon':
           applyStateStyles({
-            width: '60px',
-            height: '60px',
+            width: '80px',
+            height: '80px',
             borderRadius: '50%'
           });
           break;
@@ -189,9 +189,9 @@
         case 'icons':
           container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '400px',
-            maxWidth: '90%',
-            height: '60px',
+            width: '500px',
+            maxWidth: '95%',
+            height: '80px',
             borderRadius: '30px'
           });
           break;
@@ -199,10 +199,10 @@
         case 'chat':
           container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '400px',
-            maxWidth: '90%',
-            height: '600px',
-            maxHeight: '80vh',
+            width: '500px',
+            maxWidth: '95%',
+            height: '700px',
+            maxHeight: '90vh',
             borderRadius: '8px'
           });
           break;
@@ -223,9 +223,9 @@
         case 'qr':
           container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '400px',
-            maxWidth: '90%',
-            height: '500px',
+            width: '500px',
+            maxWidth: '95%',
+            height: '700px',
             borderRadius: '8px'
           });
           break;
