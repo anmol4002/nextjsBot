@@ -87,15 +87,15 @@
     div.id = 'punjab-bot-container';
     div.style.cssText = `
       position: fixed;
-      bottom: 0;
-      right: 0;
-      width: 80px; 
-      height: 80px;
+      bottom: 20px;
+      right: 20px;
+      width: 60px; 
+      height: 60px;
       pointer-events: none;
       z-index: 9999;
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: all 0.3s ease;
       overflow: hidden;
-      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+      border-radius: 50%;
     `;
     return div;
   }
@@ -110,7 +110,7 @@
       border: none;
       background: transparent;
       pointer-events: auto;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.2s ease;
       opacity: 0;
     `;
     frame.title = 'Punjab Government Chatbot';
@@ -118,7 +118,7 @@
     // Fade in the iframe
     setTimeout(() => {
       frame.style.opacity = '1';
-    }, 300);
+    }, 200);
     
     return frame;
   }
@@ -131,59 +131,19 @@
     window.addEventListener('resize', handleResize);
     window.addEventListener('message', handleMessages);
     
-    // Initialize container appearance
-    setTimeout(() => {
-      container.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-      container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-    }, 300);
-    
     handleResize();
   }
   
   function addAnimationStyles() {
     const styleSheet = document.createElement('style');
     styleSheet.textContent = `
-      @keyframes scaleIn {
-        0% {
-          opacity: 0;
-          transform: scale(0.9) translateY(10px);
-          box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
-        }
-        100% {
-          opacity: 1;
-          transform: scale(1) translateY(0);
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        }
-      }
-      
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
       }
       
-      @keyframes slideInRight {
-        0% {
-          opacity: 0;
-          transform: translateX(30px);
-          box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
-        }
-        100% {
-          opacity: 1;
-          transform: translateX(0);
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-      }
-      
-      .punjab-bot-scale-in {
-        animation: scaleIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      
       .punjab-bot-fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
-      }
-      
-      .punjab-bot-slide-in {
-        animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: fadeIn 0.3s ease-out forwards;
       }
     `;
     document.head.appendChild(styleSheet);
@@ -220,33 +180,30 @@
       switch(newState) {
         case 'icon':
           applyStateStyles({
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%'
           });
           break;
           
         case 'icons':
-          container.classList.add('punjab-bot-slide-in');
+          container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '500px',
-            maxWidth: '95%',
-            height: '80px',
-            borderRadius: '40px',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)'
+            width: '400px',
+            maxWidth: '90%',
+            height: '60px',
+            borderRadius: '30px'
           });
           break;
           
         case 'chat':
-          container.classList.add('punjab-bot-scale-in');
+          container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '500px',
-            maxWidth: '95%',
-            height: '700px',
+            width: '400px',
+            maxWidth: '90%',
+            height: '600px',
             maxHeight: '80vh',
-            borderRadius: '12px',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)'
+            borderRadius: '8px'
           });
           break;
           
@@ -259,19 +216,17 @@
             bottom: '0',
             maxWidth: '100%',
             maxHeight: '100%',
-            borderRadius: '0',
-            boxShadow: 'none'
+            borderRadius: '0'
           }, true);
           break;
           
         case 'qr':
-          container.classList.add('punjab-bot-scale-in');
+          container.classList.add('punjab-bot-fade-in');
           applyStateStyles({
-            width: '500px',
-            maxWidth: '95%',
-            height: '600px',
-            borderRadius: '12px',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
+            width: '400px',
+            maxWidth: '90%',
+            height: '500px',
+            borderRadius: '8px'
           });
           break;
       }
@@ -283,8 +238,8 @@
   function applyStateStyles(styles, isMaximized) {
     // Set appropriate transition based on state
     container.style.transition = isMaximized 
-      ? 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
-      : 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      ? 'all 0.3s ease'
+      : 'all 0.3s ease';
     
     // Apply all style properties
     Object.assign(container.style, styles);
