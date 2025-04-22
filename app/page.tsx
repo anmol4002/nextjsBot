@@ -485,7 +485,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { X, MessageCircle, Loader2, ArrowDownCircle, MinimizeIcon, MaximizeIcon } from "lucide-react";
+import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
 import { useCustomChat } from "@/hooks/useCustomChat";
 import { translations, departmentTranslations } from "@/lib/mapping";
 import {
@@ -938,7 +938,7 @@ export default function Chat() {
                       t={t}
                       isDepartmentLocked={isDepartmentLocked}
                       sendDepartmentMessage={sendDepartmentMessage}
-                      TRANSLATIONS={TRANSLATIONS}
+                      translations={translations}
                       language={language}
                       setIsPolicyModalOpen={setIsPolicyModalOpen}
                     />
@@ -981,7 +981,4 @@ export default function Chat() {
     </div>
   );
 }
-
-
-
 
