@@ -485,24 +485,23 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { X, MessageCircle, Loader2, ArrowDownCircle, Maximize2, Minimize2 } from "lucide-react";
+import { X, MessageCircle, Loader2, ArrowDownCircle, MinimizeIcon, MaximizeIcon } from "lucide-react";
+import { useCustomChat } from "@/hooks/useCustomChat";
+import { translations, departmentTranslations } from "@/lib/mapping";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useCustomChat } from "@/hooks/useCustomChat";
-import { translations, departmentTranslations } from "@/lib/mapping";
-import { TRANSLATIONS } from "@/lib/mapping";
 
-// Dynamically import components for better performance
-const CardHeader = dynamic(() => import("@/components/Card/CardHeader"), { ssr: false });
-const CardContent = dynamic(() => import("@/components/Card/CardContent"), { ssr: false });
-const CardFooter = dynamic(() => import("@/components/Card/CardFooter"), { ssr: false });
-const PrivacyPolicyModal = dynamic(() => import("@/components/PrivacyPolicyModal"), { ssr: false });
-const QRCard = dynamic(() => import("@/components/Card/QRCard"), { ssr: false });
-const Toast = dynamic(() => import("@/components/Toast").then((mod) => mod.Toast), { ssr: false });
+// Dynamic imports to improve initial load performance
+const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
+const CardContent = dynamic(() => import("@/components/Card/CardContent"));
+const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
+const PrivacyPolicyModal = dynamic(() => import("@/components/PrivacyPolicyModal"));
+const QRCard = dynamic(() => import("@/components/Card/QRCard"));
+const Toast = dynamic(() => import("@/components/Toast"));
 
 interface Toast {
   message: string;
@@ -510,47 +509,6 @@ interface Toast {
   icon?: React.ReactNode;
   duration?: number;
 }
-
-const ANIMATION_DURATION = {
-  FAST: 300,
-  MEDIUM: 500,
-  SLOW: 800,
-};
-
-const WIDGET_STATES = {
-  ICON: "icon",
-  ICONS: "icons",
-  CHAT: "chat",
-  MAXIMIZED: "maximized",
-  QR: "qr",
-};
-
-const ICON_CONFIG = [
-  {
-    src: "/images/finalbot.gif",
-    alt: "Chatbot",
-    tooltip: "Chat with Punjab Govt. AI Assistant",
-    action: "chat",
-  },
-  {
-    src: "/images/awhatsapp.gif",
-    alt: "WhatsApp",
-    tooltip: "WhatsApp Chatbot",
-    action: "whatsapp",
-  },
-  {
-    src: "/images/acall.gif",
-    alt: "Contact",
-    tooltip: "State Helpline 1100",
-    action: "phone",
-  },
-  {
-    src: "/images/aqr.gif",
-    alt: "QR Scan",
-    tooltip: "QR Code to open Whatsapp Chatbot",
-    action: "qr",
-  },
-];
 
 const getDepartmentInfo = (
   currentLanguage: string,
@@ -567,18 +525,17 @@ const getDepartmentInfo = (
 };
 
 export default function Chat() {
-  // UI state
+  // State management
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  const [showQRImage, setShowQRImage] = useState(false);
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
-  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isInIframe, setIsInIframe] = useState(false);
-  const [widgetState, setWidgetState] = useState(WIDGET_STATES.ICON);
   const [language, setLanguage] = useState("auto");
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showQRImage, setShowQRImage] = useState(false);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+  const [mountAnimationComplete, setMountAnimationComplete] = useState(false);
 
   // Refs
   const chatIconRef = useRef<HTMLButtonElement>(null);
@@ -603,53 +560,19 @@ export default function Chat() {
 
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
 
-  // Check if we're in an iframe
+  // Determine if running in iframe
   useEffect(() => {
     setIsInIframe(window.self !== window.top);
+    
+    // Initialization animation
+    setTimeout(() => {
+      setMountAnimationComplete(true);
+    }, 500);
   }, []);
 
-  // Handle messages to parent window when in iframe
-  useEffect(() => {
-    if (!isInIframe) return;
-    
-    sendMessageToParent(widgetState);
-  }, [isInIframe, widgetState]);
-
-  // Set up click outside listener for language dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        languageDropdownRef.current &&
-        !languageDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsLanguageDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Update widget state based on UI changes
-  useEffect(() => {
-    let newState = WIDGET_STATES.ICON;
-    
-    if (showIcons && !isChatOpen) {
-      newState = WIDGET_STATES.ICONS;
-    } else if (isChatOpen && !isMaximized && !showQRImage) {
-      newState = WIDGET_STATES.CHAT;
-    } else if (isMaximized) {
-      newState = WIDGET_STATES.MAXIMIZED;
-    } else if (showQRImage) {
-      newState = WIDGET_STATES.QR;
-    }
-    
-    setWidgetState(newState);
-  }, [showIcons, isChatOpen, isMaximized, showQRImage]);
-
-  // Utility functions
+  // Post messages to parent iframe
   function sendMessageToParent(state: string) {
-    if (window.self !== window.top) {
+    if (isInIframe) {
       try {
         window.parent.postMessage(
           {
@@ -664,87 +587,62 @@ export default function Chat() {
     }
   }
 
-  const handleTransitionState = (callback: () => void) => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      callback();
-      setIsTransitioning(false);
-    }, 50);
-  };
+  // Update parent iframe on state changes
+  useEffect(() => {
+    if (isInIframe) {
+      let currentState = "icon";
+      if (!showIcons && !isChatOpen) currentState = "icon";
+      if (showIcons) currentState = "icons";
+      if (isChatOpen && !isMaximized && !showQRImage) currentState = "chat";
+      if (isMaximized) currentState = "maximized";
+      if (showQRImage) currentState = "qr";
 
-  // Event handlers
-  const toggleIcons = () => {
-    handleTransitionState(() => {
-      setShowIcons(!showIcons);
-      if (isChatOpen) {
-        setIsChatOpen(false);
+      sendMessageToParent(currentState);
+    }
+  }, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
+
+  // Handle clicks outside language dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
       }
-    });
-  };
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Toggle chat window
   const toggleChat = () => {
-    handleTransitionState(() => {
-      const newChatState = !isChatOpen;
-      setIsChatOpen(newChatState);
-      setIsMaximized(false);
-      setShowQRImage(false);
-      
-      if (newChatState) {
-        setShowIcons(false);
-        sendInitialMessages();
-      } else {
-        setShowIcons(true);
-      }
-    });
-  };
-
-  const handleCloseChat = () => {
-    handleTransitionState(() => {
-      setIsChatOpen(false);
+    const newChatState = !isChatOpen;
+    setIsChatOpen(newChatState);
+    setIsMaximized(false);
+    setShowQRImage(false);
+    
+    if (newChatState) {
+      setShowIcons(false); // Hide icons when chat is opened
+      sendMessageToParent("chat");
+      sendInitialMessages();
+    } else {
       setShowIcons(true);
-    });
-  };
-
-  const handleMaximize = () => {
-    handleTransitionState(() => {
-      setIsMaximized(true);
-    });
-  };
-
-  const handleRestore = () => {
-    handleTransitionState(() => {
-      setIsMaximized(false);
-    });
-  };
-
-  const handleResetChat = () => {
-    resetChat();
-    setIsDepartmentLocked(false);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      sendMessageToParent("icons");
     }
   };
 
-  const handleQRClick = () => {
-    handleTransitionState(() => {
-      setIsChatOpen(true);
-      setShowQRImage(true);
-      setIsMaximized(false);
-      setShowIcons(false);
-    });
+  // Close chat and show icons
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    setShowIcons(true);
+    sendMessageToParent("icons");
   };
 
-  const handleCloseQR = () => {
-    handleTransitionState(() => {
-      setShowQRImage(false);
-      setIsChatOpen(false);
-      setShowIcons(true);
-    });
-  };
-
-  const handleWhatsAppClick = () => window.open("https://wa.me/919855501076", "_blank");
-  const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
-
+  // Handle language changes
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
     setToast({
@@ -758,7 +656,7 @@ export default function Chat() {
     
     try {
       setLanguage(selectedLanguage);
-      await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION.FAST));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       setToast({
         message:
@@ -792,10 +690,21 @@ export default function Chat() {
     }
   };
 
+  // Handle form submission
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await handleSubmit(e, input);
+      
+      // Smooth scroll to bottom after message is sent
+      if (chatContainerRef.current) {
+        setTimeout(() => {
+          chatContainerRef.current?.scrollTo({
+            top: chatContainerRef.current.scrollHeight,
+            behavior: "smooth"
+          });
+        }, 100);
+      }
     } catch (err) {
       console.error("Error in onSubmit:", err);
       setToast({
@@ -805,6 +714,59 @@ export default function Chat() {
     }
   };
 
+  // Toggle icons display
+  const toggleIcons = () => {
+    const newIconsState = !showIcons;
+    setShowIcons(newIconsState);
+    
+    if (newIconsState) {
+      sendMessageToParent("icons");
+    } else {
+      sendMessageToParent("icon");
+    }
+  };
+
+  // Toggle maximize/restore chat window
+  const handleMaximize = () => {
+    setIsMaximized(true);
+    sendMessageToParent("maximized");
+  };
+
+  const handleRestore = () => {
+    setIsMaximized(false);
+    sendMessageToParent("chat");
+  };
+
+  // Reset chat and unlock department
+  const handleResetChat = () => {
+    resetChat();
+    setIsDepartmentLocked(false);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  // External communication handlers
+  const handleWhatsAppClick = () => window.open("https://wa.me/919855501076", "_blank");
+  const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
+
+  // QR code handlers
+  const handleQRClick = () => {
+    setIsChatOpen(true);
+    setShowQRImage(true);
+    setShowIcons(false);
+    setIsMaximized(false);
+    sendMessageToParent("qr");
+  };
+
+  const handleCloseQR = () => {
+    setShowQRImage(false);
+    setIsChatOpen(false);
+    setShowIcons(true);
+    sendMessageToParent("icons");
+  };
+
+  // Send department selection message
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
@@ -814,26 +776,7 @@ export default function Chat() {
     setIsDepartmentLocked(true);
   };
 
-  const handleIconAction = (action: string) => {
-    switch (action) {
-      case "chat":
-        toggleChat();
-        break;
-      case "whatsapp":
-        handleWhatsAppClick();
-        break;
-      case "phone":
-        handlePhoneClick();
-        break;
-      case "qr":
-        handleQRClick();
-        break;
-      default:
-        break;
-    }
-  };
-
-  // Translations
+  // Get translations
   const t =
     translations[
       language === "auto" ? "en" : (language as keyof typeof translations)
@@ -845,11 +788,11 @@ export default function Chat() {
       className={`${isInIframe ? "pt-0 bg-transparent" : "flex flex-col min-h-screen"}`}
     >
       <TooltipProvider>
-        {/* Main button when icons are hidden */}
+        {/* Main chat icon when nothing is open */}
         {!showIcons && !isChatOpen && (
           <div
             className={`fixed bottom-4 right-6 z-50 ${
-              isTransitioning ? "opacity-0" : "animate-fadeInUp"
+              mountAnimationComplete ? "animate-fadeInUp" : "opacity-0"
             }`}
           >
             <Tooltip>
@@ -861,72 +804,91 @@ export default function Chat() {
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
                   aria-label="Toggle chat icons"
                 >
-                  <MessageCircle className="w-7 h-7" />
+                  <MessageCircle size={28} className="w-7 h-7" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top" className="bg-gray-800 text-white">
-                <p>{"Punjab Govt. Chatbot"}</p>
+                <p>Punjab Govt. Chatbot</p>
               </TooltipContent>
             </Tooltip>
           </div>
         )}
 
-        {/* Icons tray */}
+        {/* Icons bar */}
         {showIcons && (
-          <div className={`fixed bottom-4 right-4 z-50 w-[95%] max-w-[500px] mx-auto ${
-            isTransitioning ? "opacity-0" : "animate-slideInRight"
-          }`}>
-            <div className="flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 backdrop-blur-sm bg-opacity-95">
-              <div className="flex items-center space-x-1 sm:space-x-2">
-                {ICON_CONFIG.map((item, index) => (
-                  <div
-                    key={index}
-                    className="animate-iconAppear flex-shrink-0"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div 
-                          className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                          onClick={() => handleIconAction(item.action)}
-                        >
-                          <Image
-                            src={item.src}
-                            alt={item.alt}
-                            width={48}
-                            height={48}
-                            className="rounded-full hover:scale-110 transition-transform duration-300 ease-out"
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="bg-gray-800 text-white">
-                        <p>{item.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                ))}
-              </div>
+          <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              {[
+                {
+                  src: "/images/finalbot.gif",
+                  alt: "Chatbot",
+                  onClick: toggleChat,
+                  tooltip: "Chat with Punjab Govt. AI Assistant",
+                },
+                {
+                  src: "/images/awhatsapp.gif",
+                  alt: "WhatsApp",
+                  onClick: handleWhatsAppClick,
+                  tooltip: "WhatsApp Chatbot",
+                },
+                {
+                  src: "/images/acall.gif",
+                  alt: "Contact",
+                  onClick: handlePhoneClick,
+                  tooltip: "State Helpline 1100",
+                },
+                {
+                  src: "/images/aqr.gif",
+                  alt: "QR Scan",
+                  onClick: handleQRClick,
+                  tooltip: "QR Code to open Whatsapp Chatbot",
+                },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="animate-iconAppear flex-shrink-0"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                        <Image
+                          src={item.src}
+                          alt={item.alt}
+                          width={48}
+                          height={48}
+                          className="rounded-full cursor-pointer hover:scale-110 transition-transform duration-300 ease-out"
+                          onClick={item.onClick}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-gray-800 text-white">
+                      <p>{item.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              ))}
+            </div>
 
-              <div
-                className="animate-iconAppear flex-shrink-0 ml-1"
-                style={{ animationDelay: "0.4s" }}
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={toggleIcons}
-                      className="flex items-center justify-center w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
-                      aria-label="Close icons"
-                      size="icon"
-                    >
-                      <X className="size-6 text-white" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-gray-800 text-white">
-                    <p>Close</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
+            <div
+              className="animate-iconAppear flex-shrink-0 ml-1"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={toggleIcons}
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
+                    aria-label="Close icons"
+                    size="icon"
+                  >
+                    <X className="size-6 text-white" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-gray-800 text-white">
+                  <p>Close</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         )}
@@ -936,20 +898,21 @@ export default function Chat() {
           <div
             className={`fixed z-50 ${
               isMaximized
-                ? "inset-0 bottom-0 p-0"
-                : "bottom-20 right-4 w-[95%] max-w-[500px]"
-            } ${isTransitioning ? "opacity-0" : isMaximized ? "animate-fadeIn" : "animate-scaleIn"}`}
+                ? "inset-0 bottom-0 p-0 animate-fadeIn"
+                : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
+            }`}
             style={{
               width: isMaximized ? "100%" : "95%",
               height: isMaximized ? "100vh" : "auto",
               maxHeight: isMaximized ? "100vh" : "80vh",
               borderRadius: isMaximized ? "0" : "12px",
-              transition: "all 0.3s ease-out",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
             <Card
-              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out h-full flex flex-col ${
-                isMaximized ? "maximized-chat" : ""
+              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out flex flex-col ${
+                isMaximized ? "maximized-chat h-full" : "h-[600px] max-h-[80vh] sm:h-[700px]"
               }`}
             >
               {showQRImage ? (
@@ -967,7 +930,7 @@ export default function Chat() {
                     onClose={handleCloseChat}
                   />
 
-                  <div className="flex-grow overflow-hidden p-4">
+                  <div className="flex-grow overflow-hidden">
                     <CardContent
                       messages={messages}
                       chatContainerRef={chatContainerRef}
@@ -1018,7 +981,6 @@ export default function Chat() {
     </div>
   );
 }
-
 
 
 
