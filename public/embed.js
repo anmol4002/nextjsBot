@@ -170,7 +170,7 @@
           container.style.width = '500px';
           container.style.maxWidth = '95%';
           container.style.height = '700px';
-          container.style.maxHeight = '90vh';
+          container.style.maxHeight = '95vh';
           container.style.borderRadius = '12px';
           break;
         case 'maximized':
@@ -186,7 +186,7 @@
           container.style.width = '500px';
           container.style.maxWidth = '95%';
           container.style.height = '700px';
-          container.style.maxHeight = '90vh';
+          container.style.maxHeight = '95vh';
           container.style.borderRadius = '12px';
           break;
       }
