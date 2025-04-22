@@ -19,6 +19,24 @@
 
 
 
+// (function() {
+ 
+//   var iframe = document.createElement('iframe');
+//   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
+//   iframe.style.position = 'fixed';
+//   iframe.style.bottom = '0';
+//   iframe.style.right = '2px';
+//   iframe.style.width = '100%'; 
+//   iframe.style.height = '100%'; 
+  
+//   iframe.style.border = 'none';
+//   iframe.style.background = 'transparent';
+//   iframe.style.zIndex = '9999';
+//   iframe.title = 'Punjab Government Chatbot';
+  
+//   // Append the iframe to the body
+//   document.body.appendChild(iframe);
+// })();
 
 
 
@@ -27,40 +45,27 @@
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.position = 'fixed';
-  iframe.style.bottom = '0';
-  iframe.style.right = '0';
-  iframe.style.width = '500px'; 
-  iframe.style.height = '600px';
-  iframe.style.maxWidth = '100%'; 
-  iframe.id = 'punjab-chatbot-frame';
+  iframe.style.bottom = '20px';
+  iframe.style.right = '20px';
+  iframe.style.width = '380px'; // Fixed width or use min/max-width
+  iframe.style.height = '600px'; // Fixed height or use min/max-height
+  iframe.style.maxWidth = '100%'; // Ensure it doesn't overflow on mobile
+  iframe.style.maxHeight = '80vh'; // Ensure it doesn't take full screen height
   iframe.style.border = 'none';
+  iframe.style.borderRadius = '12px';
+  iframe.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '9999';
-  iframe.style.transition = 'all 0.3s ease';
   iframe.title = 'Punjab Government Chatbot';
   
+  // Make it responsive on mobile
+  iframe.style.overflow = 'hidden';
   
-  window.addEventListener('message', function(event) {
-    if (event.data.type === 'maximize-widget') {
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.top = '0';
-      iframe.style.left = '0';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-    } else if (event.data.type === 'restore-widget') {
-      iframe.style.width = '500px';
-      iframe.style.height = '600px';
-      iframe.style.top = 'auto';
-      iframe.style.left = 'auto';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-    }
-  });
-  
-
+  // Append the iframe to the body
   document.body.appendChild(iframe);
+
 })();
+
 
 
 
