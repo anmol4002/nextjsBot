@@ -30,7 +30,7 @@
   container.style.height = '80px';
   container.style.pointerEvents = 'none'; 
   container.style.zIndex = '9999';
-  container.style.transition = 'all 0.3s ease-in-out';
+  container.style.transition = 'all 0.4s ease-in-out';
 
   var iframe = document.createElement('iframe');
   iframe.id = 'punjab-bot-iframe';
