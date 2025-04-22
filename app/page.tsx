@@ -522,20 +522,32 @@ export default function Chat() {
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
  
-  useEffect(() => {
+ useEffect(() => {
   try {
     const inIframe = window.self !== window.top;
     setIsInIframe(inIframe);
     
-    
     if (inIframe) {
+      // Send initial state to parent
       window.parent.postMessage({ type: 'chatClosed' }, '*');
+      
+      // Add viewport meta tag for better iframe sizing
+      const meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      document.head.appendChild(meta);
+      
+      // Add explicit body styles when in iframe
+      document.body.style.margin = '0';
+      document.body.style.padding = '0';
+      document.body.style.overflow = 'hidden';
     }
   } catch (e) {
     setIsInIframe(true);
     console.error("Error checking iframe status:", e);
   }
 }, []);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -641,16 +653,26 @@ const toggleChat = () => {
 const handleMaximize = () => {
   setIsMaximized(true);
   if (isInIframe) {
-    window.parent.postMessage({ type: 'maximize' }, '*');
+    window.parent.postMessage({ 
+      type: 'maximize',
+      height: window.innerHeight,
+      width: window.innerWidth
+    }, '*');
   }
 };
+
 
 const handleRestore = () => {
   setIsMaximized(false);
   if (isInIframe) {
-    window.parent.postMessage({ type: 'restore' }, '*');
+    window.parent.postMessage({ 
+      type: 'restore',
+      height: 600,
+      width: 625
+    }, '*');
   }
 };
+
   
   const handleResetChat = () => {
     resetChat();
@@ -692,7 +714,7 @@ const handleRestore = () => {
 
   return (
 
-    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
+    <div className={`${isInIframe ? 'pt-0 bg-transparent  fixed inset-0 overflow-hidden' : 'flex flex-col min-h-screen'}`}>
 
       <TooltipProvider>
         {!showIcons  && (
