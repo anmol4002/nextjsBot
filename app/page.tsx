@@ -512,7 +512,7 @@ export default function Chat() {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   //----
   const [isInIframe, setIsInIframe] = useState(false);
-
+const [isWidgetMode, setIsWidgetMode] = useState(false);
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
@@ -537,15 +537,32 @@ export default function Chat() {
 
  
  
- useEffect(() => {
-    try {
-      setIsInIframe(window.self !== window.top);
-    } catch (e) {
-      setIsInIframe(true);
-      console.error("Error checking iframe status:", e);
-    }
+ // useEffect(() => {
+ //    try {
+ //      setIsInIframe(window.self !== window.top);
+ //    } catch (e) {
+ //      setIsInIframe(true);
+ //      console.error("Error checking iframe status:", e);
+ //    }
    
-  }, []);
+ //  }, []);
+
+ useEffect(() => {
+  try {
+    const inIframe = window.self !== window.top;
+    setIsInIframe(inIframe);
+    setIsWidgetMode(inIframe);
+    
+    // If in iframe, notify parent about ready state
+    if (inIframe) {
+      window.parent.postMessage('widgetReady', '*');
+    }
+  } catch (e) {
+    setIsInIframe(true);
+    setIsWidgetMode(true);
+    console.error("Error checking iframe status:", e);
+  }
+}, []);
 
 
   useEffect(() => {
@@ -564,15 +581,30 @@ export default function Chat() {
     };
   }, []);
 
-  const toggleChat = () => {
-    setIsChatOpen((prev) => !prev);
-    setIsMaximized(false);
-    setShowQRImage(false);
+  // const toggleChat = () => {
+  //   setIsChatOpen((prev) => !prev);
+  //   setIsMaximized(false);
+  //   setShowQRImage(false);
 
-    if (!isChatOpen) {
-      sendInitialMessages();
-    }
-  };
+  //   if (!isChatOpen) {
+  //     sendInitialMessages();
+  //   }
+  // };
+
+ const toggleChat = () => {
+  setIsChatOpen((prev) => !prev);
+  setIsMaximized(false);
+  setShowQRImage(false);
+
+  if (!isChatOpen) {
+    sendInitialMessages();
+  }
+
+  // Notify parent window about chat state
+  if (isWidgetMode && window.parent) {
+    window.parent.postMessage(isChatOpen ? 'chatClosed' : 'chatOpened', '*');
+  }
+};
 
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
