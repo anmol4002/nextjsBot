@@ -68,15 +68,15 @@
          
           container.style.width = '500px';
           container.style.maxWidth = '95%';
-          container.style.height = '750px';
+          container.style.height = '800px';
           container.style.maxHeight = '90vh';
           break;
         case 'maximized':
           
           container.style.width = '100%';
           container.style.height = '100%';
-          container.style.top = '0';
-          container.style.left = '0';
+          container.style.right = '0';
+          container.style.bottom = '0';
           container.style.maxWidth = '100%';
           container.style.maxHeight = '100%';
           break;
