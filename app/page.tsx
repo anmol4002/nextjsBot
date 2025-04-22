@@ -535,27 +535,25 @@ const [isWidgetMode, setIsWidgetMode] = useState(false);
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
- 
- 
- // useEffect(() => {
- //    try {
- //      setIsInIframe(window.self !== window.top);
- //    } catch (e) {
- //      setIsInIframe(true);
- //      console.error("Error checking iframe status:", e);
- //    }
-   
- //  }, []);
-
- useEffect(() => {
+useEffect(() => {
   try {
     const inIframe = window.self !== window.top;
     setIsInIframe(inIframe);
     setIsWidgetMode(inIframe);
     
-    // If in iframe, notify parent about ready state
     if (inIframe) {
-      window.parent.postMessage('widgetReady', '*');
+      // Notify parent about ready state
+      window.parent.postMessage({ type: 'widgetReady' }, '*');
+      
+      // Handle resize messages from parent
+      const handleMessage = (event) => {
+        if (event.data?.type === 'resizeWidget') {
+          // You can handle resize requests here if needed
+        }
+      };
+      
+      window.addEventListener('message', handleMessage);
+      return () => window.removeEventListener('message', handleMessage);
     }
   } catch (e) {
     setIsInIframe(true);
@@ -563,7 +561,6 @@ const [isWidgetMode, setIsWidgetMode] = useState(false);
     console.error("Error checking iframe status:", e);
   }
 }, []);
-
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -581,28 +578,22 @@ const [isWidgetMode, setIsWidgetMode] = useState(false);
     };
   }, []);
 
-  // const toggleChat = () => {
-  //   setIsChatOpen((prev) => !prev);
-  //   setIsMaximized(false);
-  //   setShowQRImage(false);
-
-  //   if (!isChatOpen) {
-  //     sendInitialMessages();
-  //   }
-  // };
-
  const toggleChat = () => {
-  setIsChatOpen((prev) => !prev);
+  const newState = !isChatOpen;
+  setIsChatOpen(newState);
   setIsMaximized(false);
   setShowQRImage(false);
 
-  if (!isChatOpen) {
+  if (newState) {
     sendInitialMessages();
   }
 
-  // Notify parent window about chat state
+  // Notify parent window about chat state and size changes
   if (isWidgetMode && window.parent) {
-    window.parent.postMessage(isChatOpen ? 'chatClosed' : 'chatOpened', '*');
+    window.parent.postMessage({
+      type: newState ? 'chatOpened' : 'chatClosed',
+      height: newState ? '600px' : '80px' // Adjust based on your needs
+    }, '*');
   }
 };
 
@@ -716,7 +707,7 @@ const [isWidgetMode, setIsWidgetMode] = useState(false);
 
   return (
 
-    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
+    <div className={`${isInIframe ? 'pt-0 bg-transparent h-full' : 'flex flex-col min-h-screen'}`}>
 
       <TooltipProvider>
         {!showIcons  && (
