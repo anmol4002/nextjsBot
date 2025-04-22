@@ -81,15 +81,30 @@ export default function Chat() {
 
  
  
- useEffect(() => {
-    try {
-      setIsInIframe(window.self !== window.top);
-    } catch (e) {
-      setIsInIframe(true);
-      console.error("Error checking iframe status:", e);
-    }
+ // useEffect(() => {
+ //    try {
+ //      setIsInIframe(window.self !== window.top);
+ //    } catch (e) {
+ //      setIsInIframe(true);
+ //      console.error("Error checking iframe status:", e);
+ //    }
    
-  }, []);
+ //  }, []);
+  useEffect(() => {
+  try {
+    const inIframe = window.self !== window.top;
+    setIsInIframe(inIframe);
+    
+    
+    if (inIframe) {
+      nts
+      window.parent.postMessage({ type: 'chatClosed' }, '*');
+    }
+  } catch (e) {
+    setIsInIframe(true);
+    console.error("Error checking iframe status:", e);
+  }
+}, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -107,16 +122,34 @@ export default function Chat() {
     };
   }, []);
 
-  const toggleChat = () => {
-    setIsChatOpen((prev) => !prev);
-    setIsMaximized(false);
-    setShowQRImage(false);
+  // const toggleChat = () => {
+  //   setIsChatOpen((prev) => !prev);
+  //   setIsMaximized(false);
+  //   setShowQRImage(false);
 
-    if (!isChatOpen) {
-      sendInitialMessages();
+  //   if (!isChatOpen) {
+  //     sendInitialMessages();
+  //   }
+  // };
+const toggleChat = () => {
+  const newChatState = !isChatOpen;
+  setIsChatOpen(newChatState);
+  setIsMaximized(false);
+  setShowQRImage(false);
+
+  if (newChatState) {
+    sendInitialMessages();
+  
+    if (isInIframe) {
+      window.parent.postMessage({ type: 'chatOpen' }, '*');
     }
-  };
-
+  } else {
+ 
+    if (isInIframe) {
+      window.parent.postMessage({ type: 'chatClosed' }, '*');
+    }
+  }
+};
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
     setToast({
@@ -182,9 +215,22 @@ export default function Chat() {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
-  const handleMaximize = () => setIsMaximized(true);
-  const handleRestore = () => setIsMaximized(false);
+  // const handleMaximize = () => setIsMaximized(true);
+  // const handleRestore = () => setIsMaximized(false);
+const handleMaximize = () => {
+  setIsMaximized(true);
+  if (isInIframe) {
+    window.parent.postMessage({ type: 'maximize' }, '*');
+  }
+};
 
+const handleRestore = () => {
+  setIsMaximized(false);
+  if (isInIframe) {
+    window.parent.postMessage({ type: 'restore' }, '*');
+  }
+};
+  
   const handleResetChat = () => {
     resetChat();
     setIsDepartmentLocked(false);
@@ -221,6 +267,13 @@ export default function Chat() {
     translations[
       language === "auto" ? "en" : (language as keyof typeof translations)
     ] || translations.en;
+
+  const handleClose = () => {
+  toggleChat();
+  if (isInIframe && isChatOpen) {
+    window.parent.postMessage({ type: 'chatClosed' }, '*');
+  }
+};
 
   return (
 
