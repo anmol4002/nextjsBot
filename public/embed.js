@@ -8,9 +8,9 @@
   // iframe.style.right = '2px';
   // iframe.style.width = '100vh'; 
   // iframe.style.height = '100vh'; 
-  iframe.style.bottom = '20px';  
-  iframe.style.right = '20px';   
-  iframe.style.width = '350px';  
+  iframe.style.bottom = '0;  
+  iframe.style.right = '2px';   
+  iframe.style.width = '650px';  
   iframe.style.height = '500px';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
