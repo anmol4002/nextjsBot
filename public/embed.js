@@ -26,8 +26,8 @@
   container.style.position = 'fixed';
   container.style.bottom = '0';
   container.style.right = '0';
-  container.style.width = '70px'; 
-  container.style.height = '70px';
+  container.style.width = '80px'; 
+  container.style.height = '80px';
   container.style.pointerEvents = 'none'; 
   container.style.zIndex = '9999';
   container.style.transition = 'all 0.3s ease-in-out';
@@ -56,11 +56,10 @@
       switch(event.data.state) {
         case 'icon':
          
-          container.style.width = '70px';
-          container.style.height = '70px';
+          container.style.width = '80px';
+          container.style.height = '80px';
           break;
         case 'icons':
-         
           container.style.width = '500px';
           container.style.maxWidth = '95%';
           container.style.height = '80px';
@@ -69,8 +68,8 @@
          
           container.style.width = '500px';
           container.style.maxWidth = '95%';
-          container.style.height = '600px';
-          container.style.maxHeight = '80vh';
+          container.style.height = '700px';
+          container.style.maxHeight = '90vh';
           break;
         case 'maximized':
           
@@ -85,7 +84,7 @@
           
           container.style.width = '500px';
           container.style.maxWidth = '95%';
-          container.style.height = '500px';
+          container.style.height = '700px';
           break;
       }
     }
