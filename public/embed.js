@@ -70,7 +70,7 @@
 
 
 (function() {
-  // Create container for the bot
+  // Create container for the widget
   var container = document.createElement('div');
   container.id = 'punjab-bot-container';
   container.style.position = 'fixed';
@@ -80,10 +80,10 @@
   container.style.height = '80px';
   container.style.pointerEvents = 'none'; 
   container.style.zIndex = '9999';
-  container.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  container.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
   container.style.overflow = 'hidden';
-  
-  // Create iframe for the bot
+
+  // Create iframe
   var iframe = document.createElement('iframe');
   iframe.id = 'punjab-bot-iframe';
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
@@ -92,60 +92,81 @@
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.pointerEvents = 'auto'; 
-  iframe.style.borderRadius = '12px';
   iframe.title = 'Punjab Government Chatbot';
+  iframe.style.transition = 'opacity 0.3s ease';
+  iframe.style.opacity = '0'; // Start invisible for smooth fade-in
   
-  // Add the iframe to the container
+  // Add to DOM
   container.appendChild(iframe);
   document.body.appendChild(container);
   
-  // Responsive resizing based on window size
-  function adjustForScreenSize() {
-    const isMobile = window.innerWidth < 768;
+  // Fade in the iframe
+  setTimeout(function() {
+    iframe.style.opacity = '1';
+  }, 300);
+
+  // Handle resize on window changes
+  function handleResize() {
+    // Adjust container maximum dimensions based on viewport
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
     
-    // Only adjust default sizes, not active states
-    if (container.style.width === '80px' && container.style.height === '80px') {
-      container.style.width = isMobile ? '60px' : '80px';
-      container.style.height = isMobile ? '60px' : '80px';
+    // Set max height for chat mode based on viewport
+    if (container.dataset.state === 'chat' || container.dataset.state === 'qr') {
+      const maxHeight = Math.min(800, viewportHeight * 0.95);
+      container.style.maxHeight = maxHeight + 'px';
+    }
+    
+    // For small screens, adjust maximized position if needed
+    if (container.dataset.state === 'maximized' && viewportWidth < 768) {
+      container.style.width = '100%';
+      container.style.height = '100%';
     }
   }
+
+  // Listen for window resize events
+  window.addEventListener('resize', handleResize);
   
-  // Initial adjustment
-  adjustForScreenSize();
-  
-  // Listen for resize events
-  window.addEventListener('resize', adjustForScreenSize);
-  
-  // Handle messages from the iframe
+  // Initial setup
+  handleResize();
+
+  // Listen for messages from iframe
   window.addEventListener('message', function(event) {
-    // Security check - only accept messages from our widget domain
+    // Security check - only accept messages from our widget or same origin
     if (event.origin !== 'https://nextjs-bot-ten.vercel.app' && event.origin !== window.location.origin) return;
-    
-    // Handle widget state changes
+
     if (event.data && event.data.type === 'widgetState') {
-      const isMobile = window.innerWidth < 768;
+      // Save current state for resize handler
+      container.dataset.state = event.data.state;
       
+      // Handle different widget states with smoother transitions
       switch(event.data.state) {
         case 'icon':
-          container.style.width = isMobile ? '60px' : '80px';
-          container.style.height = isMobile ? '60px' : '80px';
-          container.style.bottom = isMobile ? '20px' : '24px';
-          container.style.right = isMobile ? '20px' : '24px';
+          // Single chat icon state
+          container.style.width = '80px';
+          container.style.height = '80px';
+          container.style.borderRadius = '50%';
           break;
+          
         case 'icons':
-          container.style.width = isMobile ? '95%' : '500px';
-          container.style.height = isMobile ? '70px' : '80px';
-          container.style.bottom = '24px';
-          container.style.right = isMobile ? '10px' : '24px';
+          // Expanded icons bar state
+          container.style.width = '500px';
+          container.style.maxWidth = '95%';
+          container.style.height = '80px';
+          container.style.borderRadius = '40px';
           break;
+          
         case 'chat': 
-          container.style.width = isMobile ? '95%' : '500px';
-          container.style.height = isMobile ? '80vh' : '700px';
+          // Chat window state
+          container.style.width = '500px';
+          container.style.maxWidth = '95%';
+          container.style.height = '700px';
           container.style.maxHeight = '80vh';
-          container.style.bottom = '24px';
-          container.style.right = isMobile ? '10px' : '24px';
+          container.style.borderRadius = '12px';
           break;
+          
         case 'maximized':
+          // Full screen chat state
           container.style.width = '100%';
           container.style.height = '100%';
           container.style.right = '0';
@@ -153,25 +174,25 @@
           container.style.maxWidth = '100%';
           container.style.maxHeight = '100%';
           container.style.borderRadius = '0';
-          iframe.style.borderRadius = '0';
           break;
+          
         case 'qr':
-          container.style.width = isMobile ? '95%' : '500px';
-          container.style.height = isMobile ? '80vh' : '600px';
-          container.style.maxHeight = '80vh';
-          container.style.bottom = '24px';
-          container.style.right = isMobile ? '10px' : '24px';
+          // QR code display state
+          container.style.width = '500px';
+          container.style.maxWidth = '95%';
+          container.style.height = '600px';
+          container.style.borderRadius = '12px';
           break;
       }
       
-      // Toggle visibility of scroll in container based on state
-      if (event.data.state === 'maximized') {
-        container.style.overflow = 'auto';
-      } else {
-        container.style.overflow = 'hidden';
-      }
+      // Re-run resize logic to ensure proper dimensions
+      handleResize();
     }
   });
+  
+  // Initialize with a clean fade-in
+  setTimeout(function() {
+    container.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  }, 1000);
 })();
-
 
