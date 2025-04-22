@@ -535,25 +535,23 @@ const [isWidgetMode, setIsWidgetMode] = useState(false);
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
+ 
+ 
+const notifyParent = (message) => {
+  if (isWidgetMode && window.parent) {
+    window.parent.postMessage(message, '*');
+  }
+};
+
 useEffect(() => {
   try {
     const inIframe = window.self !== window.top;
     setIsInIframe(inIframe);
     setIsWidgetMode(inIframe);
     
+    // If in iframe, notify parent about ready state
     if (inIframe) {
-      // Notify parent about ready state
-      window.parent.postMessage({ type: 'widgetReady' }, '*');
-      
-      // Handle resize messages from parent
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === 'resizeWidget') {
-          // You can handle resize requests here if needed
-        }
-      };
-      
-      window.addEventListener('message', handleMessage);
-      return () => window.removeEventListener('message', handleMessage);
+      window.parent.postMessage('widgetReady', '*');
     }
   } catch (e) {
     setIsInIframe(true);
@@ -561,6 +559,21 @@ useEffect(() => {
     console.error("Error checking iframe status:", e);
   }
 }, []);
+
+
+useEffect(() => {
+  if (isWidgetMode) {
+    const handleParentMessages = (event) => {
+     
+    };
+    
+    window.addEventListener('message', handleParentMessages);
+    return () => window.removeEventListener('message', handleParentMessages);
+  }
+}, [isWidgetMode]);
+
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -577,24 +590,25 @@ useEffect(() => {
     };
   }, []);
 
- const toggleChat = () => {
-  const newState = !isChatOpen;
-  setIsChatOpen(newState);
+
+  if (isWidgetMode && window.parent) {
+    window.parent.postMessage(isChatOpen ? 'chatClosed' : 'chatOpened', '*');
+  }
+};
+
+const toggleChat = () => {
+  setIsChatOpen((prev) => !prev);
   setIsMaximized(false);
   setShowQRImage(false);
 
-  if (newState) {
+  if (!isChatOpen) {
     sendInitialMessages();
-  }
-
-  // Notify parent window about chat state and size changes
-  if (isWidgetMode && window.parent) {
-    window.parent.postMessage({
-      type: newState ? 'chatOpened' : 'chatClosed',
-      height: newState ? '600px' : '80px' // Adjust based on your needs
-    }, '*');
+    notifyParent('chatOpened');
+  } else {
+    notifyParent('chatClosed');
   }
 };
+
 
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
@@ -661,9 +675,15 @@ useEffect(() => {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
-  const handleMaximize = () => setIsMaximized(true);
-  const handleRestore = () => setIsMaximized(false);
+const handleMaximize = () => {
+  setIsMaximized(true);
+  notifyParent('chatMaximized');
+};
 
+const handleRestore = () => {
+  setIsMaximized(false);
+  notifyParent('chatRestored');
+};
   
   const handleResetChat = () => {
     resetChat();
@@ -706,7 +726,7 @@ useEffect(() => {
 
   return (
 
-    <div className={`${isInIframe ? 'pt-0 bg-transparent h-full' : 'flex flex-col min-h-screen'}`}>
+    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
 
       <TooltipProvider>
         {!showIcons  && (
@@ -913,11 +933,6 @@ useEffect(() => {
     </div>
   );
 }
-
-
-
-
-
 
 
 
