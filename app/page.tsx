@@ -451,9 +451,6 @@
 
 
 
-
-
-
 "use client";
 import dynamic from "next/dynamic";
 
@@ -512,7 +509,7 @@ export default function Chat() {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   //----
   const [isInIframe, setIsInIframe] = useState(false);
-const [isWidgetMode, setIsWidgetMode] = useState(false);
+
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
@@ -537,41 +534,15 @@ const [isWidgetMode, setIsWidgetMode] = useState(false);
 
  
  
-const notifyParent = (message) => {
-  if (isWidgetMode && window.parent) {
-    window.parent.postMessage(message, '*');
-  }
-};
-
-useEffect(() => {
-  try {
-    const inIframe = window.self !== window.top;
-    setIsInIframe(inIframe);
-    setIsWidgetMode(inIframe);
-    
-    // If in iframe, notify parent about ready state
-    if (inIframe) {
-      window.parent.postMessage('widgetReady', '*');
+ useEffect(() => {
+    try {
+      setIsInIframe(window.self !== window.top);
+    } catch (e) {
+      setIsInIframe(true);
+      console.error("Error checking iframe status:", e);
     }
-  } catch (e) {
-    setIsInIframe(true);
-    setIsWidgetMode(true);
-    console.error("Error checking iframe status:", e);
-  }
-}, []);
-
-
-useEffect(() => {
-  if (isWidgetMode) {
-    const handleParentMessages = (event) => {
-     
-    };
-    
-    window.addEventListener('message', handleParentMessages);
-    return () => window.removeEventListener('message', handleParentMessages);
-  }
-}, [isWidgetMode]);
-
+   
+  }, []);
 
 
   useEffect(() => {
@@ -590,25 +561,15 @@ useEffect(() => {
     };
   }, []);
 
+  const toggleChat = () => {
+    setIsChatOpen((prev) => !prev);
+    setIsMaximized(false);
+    setShowQRImage(false);
 
-  if (isWidgetMode && window.parent) {
-    window.parent.postMessage(isChatOpen ? 'chatClosed' : 'chatOpened', '*');
-  }
-};
-
-const toggleChat = () => {
-  setIsChatOpen((prev) => !prev);
-  setIsMaximized(false);
-  setShowQRImage(false);
-
-  if (!isChatOpen) {
-    sendInitialMessages();
-    notifyParent('chatOpened');
-  } else {
-    notifyParent('chatClosed');
-  }
-};
-
+    if (!isChatOpen) {
+      sendInitialMessages();
+    }
+  };
 
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
@@ -675,15 +636,9 @@ const toggleChat = () => {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
-const handleMaximize = () => {
-  setIsMaximized(true);
-  notifyParent('chatMaximized');
-};
+  const handleMaximize = () => setIsMaximized(true);
+  const handleRestore = () => setIsMaximized(false);
 
-const handleRestore = () => {
-  setIsMaximized(false);
-  notifyParent('chatRestored');
-};
   
   const handleResetChat = () => {
     resetChat();
@@ -933,6 +888,25 @@ const handleRestore = () => {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
