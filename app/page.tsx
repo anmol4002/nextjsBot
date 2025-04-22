@@ -446,13 +446,16 @@
 
 
 
-
-
-
-
-
 "use client";
 import dynamic from "next/dynamic";
+
+const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
+const CardContent = dynamic(() => import("@/components/Card/CardContent"));
+const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
+const PrivacyPolicyModal = dynamic(
+  () => import("@/components/PrivacyPolicyModal")
+);
+const QRCard = dynamic(() => import("@/components/Card/QRCard"));
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -465,15 +468,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
+
 import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
+
 import { useCustomChat } from "@/hooks/useCustomChat";
 import { translations, departmentTranslations } from "@/lib/mapping";
-
-const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
-const CardContent = dynamic(() => import("@/components/Card/CardContent"));
-const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
-const PrivacyPolicyModal = dynamic(() => import("@/components/PrivacyPolicyModal"));
-const QRCard = dynamic(() => import("@/components/Card/QRCard"));
 
 interface Toast {
   message: string;
@@ -501,9 +500,10 @@ export default function Chat() {
   const [showIcons, setShowIcons] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
+
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  //----
   const [isInIframe, setIsInIframe] = useState(false);
-  const [widgetState, setWidgetState] = useState('button'); // 'button', 'icons', 'chat', 'maximized'
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -527,58 +527,18 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-  // Check if we're in an iframe
-  useEffect(() => {
+ 
+ 
+ useEffect(() => {
     try {
       setIsInIframe(window.self !== window.top);
     } catch (e) {
       setIsInIframe(true);
       console.error("Error checking iframe status:", e);
     }
+   
   }, []);
 
-  // Set up message communication with parent window
-  useEffect(() => {
-    if (!isInIframe) return;
-
-    // Listen for messages from parent
-    const handleMessage = (event: MessageEvent) => {
-      if (typeof event.data !== 'object' || !event.data) return;
-      
-      if (event.data.type === 'chatButtonClick') {
-        toggleIcons();
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isInIframe]);
-
-  // Send widget state to parent window
-  useEffect(() => {
-    if (!isInIframe) return;
-    
-    let newState = 'button';
-    if (isMaximized) {
-      newState = 'maximized';
-    } else if (isChatOpen) {
-      newState = 'chat';
-    } else if (showIcons) {
-      newState = 'icons';
-    }
-    
-    if (newState !== widgetState) {
-      setWidgetState(newState);
-      try {
-        window.parent.postMessage({
-          type: 'chatStateChange',
-          state: newState
-        }, '*');
-      } catch (e) {
-        console.error("Failed to communicate with parent window:", e);
-      }
-    }
-  }, [isInIframe, isChatOpen, showIcons, isMaximized, widgetState]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -671,11 +631,10 @@ export default function Chat() {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
-  
   const handleMaximize = () => setIsMaximized(true);
-  
   const handleRestore = () => setIsMaximized(false);
 
+  
   const handleResetChat = () => {
     resetChat();
     setIsDepartmentLocked(false);
@@ -699,7 +658,6 @@ export default function Chat() {
     setShowQRImage(false);
     setIsChatOpen(false);
   };
-  
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
@@ -714,12 +672,16 @@ export default function Chat() {
       language === "auto" ? "en" : (language as keyof typeof translations)
     ] || translations.en;
 
+
+
   return (
-    <div className={`fixed inset-0 z-50 pointer-events-none ${isInIframe ? 'bg-transparent' : ''}`}>
+
+    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
+
       <TooltipProvider>
-        {!showIcons && (
+        {!showIcons  && (
           <div
-            className={`fixed bottom-4 right-6 z-50 pointer-events-auto ${
+            className={`fixed bottom-4 right-6 z-50 ${
               !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
             }`}
           >
@@ -753,7 +715,7 @@ export default function Chat() {
         )}
 
         {showIcons && (
-          <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight pointer-events-auto">
+          <div className="fixed bottom-2 z-50 right-4  w-[95%] max-w-[500px] mx-auto flex items-center justify-between  bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
               {[
                 {
@@ -835,7 +797,7 @@ export default function Chat() {
 
         {isChatOpen && (
           <div
-            className={`fixed z-50 pointer-events-auto ${
+            className={`fixed z-50 ${
               isMaximized
                 ? "inset-0 bottom-0 p-0 animate-fadeIn"
                 : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
@@ -847,7 +809,8 @@ export default function Chat() {
             }}
           >
             <Card
-              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out`}
+              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out
+         `}
             >
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
@@ -920,6 +883,13 @@ export default function Chat() {
     </div>
   );
 }
+
+
+
+
+
+
+
 
 
 
