@@ -47,8 +47,8 @@
   iframe.style.position = 'fixed';
   iframe.style.bottom = '20px';
   iframe.style.right = '20px';
-  iframe.style.width = '380px'; // Fixed width or use min/max-width
-  iframe.style.height = '600px'; // Fixed height or use min/max-height
+  iframe.style.width = '500px'; // Fixed width or use min/max-width
+  iframe.style.height = '620px'; // Fixed height or use min/max-height
   iframe.style.maxWidth = '100%'; // Ensure it doesn't overflow on mobile
   iframe.style.maxHeight = '80vh'; // Ensure it doesn't take full screen height
   iframe.style.border = 'none';
