@@ -546,7 +546,7 @@ useEffect(() => {
       window.parent.postMessage({ type: 'widgetReady' }, '*');
       
       // Handle resize messages from parent
-      const handleMessage = (event) => {
+      const handleMessage = (event: MessageEvent) => {
         if (event.data?.type === 'resizeWidget') {
           // You can handle resize requests here if needed
         }
@@ -561,7 +561,6 @@ useEffect(() => {
     console.error("Error checking iframe status:", e);
   }
 }, []);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
