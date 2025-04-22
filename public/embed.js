@@ -25,9 +25,9 @@
   container.style.position = 'fixed';
   container.style.bottom = '0';
   container.style.right = '0';
-  container.style.width = '500px'; // Maximum width matching your widget's max-width
+  container.style.width = '600px'; // Maximum width matching your widget's max-width
   container.style.height = '700px'; // Enough height for expanded chat
-  container.style.maxWidth = '95%'; // Responsive width
+  container.style.maxWidth = '100%'; // Responsive width
   container.style.pointerEvents = 'none'; // Important: allows clicking through when not on widget
   container.style.zIndex = '9999';
   
