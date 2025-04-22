@@ -62,8 +62,8 @@
     } else if (event.data.type === 'chatClosed') {
       container.style.pointerEvents = 'none'; // Disable pointer events when chat is closed
     } else if (event.data.type === 'maximize') {
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
+      iframe.style.width = '100vh';
+      iframe.style.height = '100vh';
       container.style.width = '100%'; 
       container.style.height = '100%';
       container.style.top = '0';
