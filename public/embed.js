@@ -20,19 +20,20 @@
 
 
 (function() {
- 
+  
   var container = document.createElement('div');
+  container.id = 'punjab-bot-container';
   container.style.position = 'fixed';
   container.style.bottom = '0';
   container.style.right = '0';
-  container.style.width = '500px'; 
-  container.style.height = '700px';
-  container.style.maxWidth = '95%'; 
+  container.style.width = '70px'; 
+  container.style.height = '70px';
   container.style.pointerEvents = 'none'; 
   container.style.zIndex = '9999';
-  
- 
+  container.style.transition = 'all 0.3s ease-in-out';
+
   var iframe = document.createElement('iframe');
+  iframe.id = 'punjab-bot-iframe';
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.width = '100%';
   iframe.style.height = '100%';
@@ -41,44 +42,55 @@
   iframe.style.pointerEvents = 'auto'; 
   iframe.title = 'Punjab Government Chatbot';
   
- 
+  
   container.appendChild(iframe);
   document.body.appendChild(container);
   
-  // Optional: Listen for messages from iframe to adjust container size based on widget state
-  // window.addEventListener('message', function(event) {
-  //   // Verify origin for security
-  //   if (event.origin !== 'https://nextjs-bot-ten.vercel.app') return;
+  
+  window.addEventListener('message', function(event) {
+  
+    if (event.origin !== 'https://nextjs-bot-ten.vercel.app' && event.origin !== window.location.origin) return;
     
-  //   // Handle messages from iframe if you implement them
-  //   if (event.data.type === 'widgetState') {
-  //     switch(event.data.state) {
-  //       case 'icon':
-  //         // Just show icon
-  //         container.style.height = '80px';
-  //         break;
-  //       case 'icons':
-  //         // Show expanded icons
-  //         container.style.height = '100px';
-  //         break;
-  //       case 'chat':
-  //         // Show chat
-  //         container.style.height = '600px';
-  //         break;
-  //       case 'maximized':
-  //         // Full screen chat
-  //         container.style.width = '100%';
-  //         container.style.height = '100%';
-  //         break;
-  //     }
-  //   }
-  // });
+   
+    if (event.data && event.data.type === 'widgetState') {
+      switch(event.data.state) {
+        case 'icon':
+         
+          container.style.width = '70px';
+          container.style.height = '70px';
+          break;
+        case 'icons':
+         
+          container.style.width = '500px';
+          container.style.maxWidth = '95%';
+          container.style.height = '80px';
+          break;
+        case 'chat':
+         
+          container.style.width = '500px';
+          container.style.maxWidth = '95%';
+          container.style.height = '600px';
+          container.style.maxHeight = '80vh';
+          break;
+        case 'maximized':
+          
+          container.style.width = '100%';
+          container.style.height = '100%';
+          container.style.top = '0';
+          container.style.left = '0';
+          container.style.maxWidth = '100%';
+          container.style.maxHeight = '100%';
+          break;
+        case 'qr':
+          
+          container.style.width = '500px';
+          container.style.maxWidth = '95%';
+          container.style.height = '500px';
+          break;
+      }
+    }
+  });
 })();
-
-
-
-
-
 
 
 
