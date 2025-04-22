@@ -660,6 +660,11 @@ useEffect(() => {
     sendMessageToParent('icon');
   }
 };
+ const handleMaximize = () => {
+  setIsMaximized(true);
+  sendMessageToParent('maximized');
+};
+
 
 const handleRestore = () => {
   setIsMaximized(false);
