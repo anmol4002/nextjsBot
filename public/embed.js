@@ -57,8 +57,7 @@
           container.style.maxHeight = '100%';
           break;
         case 'qr':
-          
-          container.style.width = '700px';
+          container.style.width = '600px';
           container.style.maxWidth = '95%';
           container.style.height = '800px';
           break;
