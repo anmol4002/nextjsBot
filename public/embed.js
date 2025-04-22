@@ -8,7 +8,7 @@
   // iframe.style.right = '2px';
   // iframe.style.width = '100vh'; 
   // iframe.style.height = '100vh'; 
-  iframe.style.bottom = '0;  
+  iframe.style.bottom = '0';  
   iframe.style.right = '2px';   
   iframe.style.width = '650px';  
   iframe.style.height = '500px';
