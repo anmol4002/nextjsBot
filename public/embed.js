@@ -131,47 +131,49 @@
 // 🌸🌸🌸🌸🌸
 
 
-(function() {
-  // Create container div
-  var container = document.createElement('div');
-  container.id = 'punjab-gov-chatbot-container';
-  container.style.position = 'fixed';
-  container.style.bottom = '0';
-  container.style.right = '0';
-  container.style.zIndex = '9999';
-  container.style.width = 'auto';
-  container.style.height = 'auto';
-  container.style.overflow = 'visible';
+function loadChatWidget(url) {
+  var iframe = document.createElement("iframe");
+  iframe.setAttribute("src", url);
+  iframe.setAttribute("allowtransparency", "true");
+  iframe.setAttribute("class", "chatbot-iframe");
+  iframe.setAttribute("frameborder", "0");
+  iframe.setAttribute("scrolling", "no");
+  iframe.style.position = "fixed";
+  iframe.style.bottom = "0px";
+  iframe.style.right = "0px";
+  iframe.style.width = "auto";
+  iframe.style.height = "auto";
+  iframe.style.float = "none";
+  iframe.style.overflow = "visible";
+  iframe.style.background = "none";
+  iframe.style.backgroundColor = "transparent";
+  iframe.style.zIndex = "99999";
+  iframe.style.pointerEvents = "auto";
+  iframe.style.transition = "all 0.3s ease";
 
-  // Create iframe
-  var iframe = document.createElement('iframe');
-  iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
-  iframe.style.border = 'none';
-  iframe.style.background = 'transparent';
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.title = 'Punjab Government Chatbot';
-  iframe.allow = 'microphone';
-  iframe.style.overflow = 'visible';
-  
-  // Make absolutely sure iframe is interactive
-  iframe.style.pointerEvents = 'auto';
-  iframe.style.userSelect = 'auto';
-  iframe.style.webkitUserSelect = 'auto';
+  document.body.appendChild(iframe);
 
-  // Add iframe to container
-  container.appendChild(iframe);
-  document.body.appendChild(container);
+  window.addEventListener("message", function (event) {
+    if (event.data === "widgetOpen") {
+      iframe.style.width = "95%";
+      iframe.style.maxWidth = "500px";
+      iframe.style.height = "70vh";
+    } else if (event.data === "widgetClosed") {
+      iframe.style.width = "auto";
+      iframe.style.height = "auto";
+    }
+  });
+}
 
-  // Function to force enable interactions
-  function enableInteractions() {
-    iframe.style.pointerEvents = 'auto';
-    container.style.pointerEvents = 'none'; // Container doesn't block clicks
+function loadWhenReady(url) {
+  if (document.readyState === "complete" || 
+      (document.readyState !== "loading" && !document.documentElement.doScroll)) {
+    loadChatWidget(url);
+  } else {
+    document.addEventListener("DOMContentLoaded", function() {
+      loadChatWidget(url);
+    });
   }
+}
 
-  // Initial enable
-  enableInteractions();
-
-  // Continuously ensure interactions are enabled
-  setInterval(enableInteractions, 1000);
-})();
+loadWhenReady("https://nextjs-bot-ten.vercel.app/widget");
