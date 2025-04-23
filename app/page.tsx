@@ -1032,74 +1032,47 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const inIframe = window.self !== window.top;
-      setIsInIframe(inIframe);
-    } catch (e) {
-      setIsInIframe(true);
-      console.error("Error checking iframe status:", e);
-    }
-  }, []);
-
-  // Communication with parent window
-  useEffect(() => {
-    const sendStateToParent = () => {
-      try {
-        if (window.self !== window.top) {
-          let state = 'closed';
-          if (isChatOpen) state = 'chatOpen';
-          else if (showIcons) state = 'iconsOpen';
-          
-          window.parent.postMessage({
-            type: 'widgetState',
-            state: state
-          }, '*');
-        }
-      } catch (e) {
-        console.error("Error communicating with parent:", e);
-      }
-    };
-
-    sendStateToParent();
-    const timer = setTimeout(sendStateToParent, 100);
-
-    return () => {
-      clearTimeout(timer);
-      if (window.self !== window.top) {
-        window.parent.postMessage({
-          type: 'widgetState',
-          state: 'closed'
-        }, '*');
-      }
-    };
-  }, [isChatOpen, showIcons]);
-
- useEffect(() => {
-  const handleResize = () => {
-    if (window.self !== window.top) {
-      // Send height to parent for proper sizing
-      const height = document.documentElement.scrollHeight;
+useEffect(() => {
+  try {
+    const inIframe = window.self !== window.top;
+    setIsInIframe(inIframe);
+    
+    if (inIframe) {
       window.parent.postMessage({
-        type: 'resize',
-        height: height
+        type: 'chatLoaded',
+        isLoaded: true
       }, '*');
+      
+      const notifyParent = () => {
+        window.parent.postMessage({
+          type: 'chatVisibility',
+          isOpen: isChatOpen
+        }, '*');
+      };
+ 
+      notifyParent();
+      const messageHandler = (event: MessageEvent) => {
+        if (event.data.type === 'toggleChat') {
+          setIsChatOpen(prev => !prev);
+        }
+      };
+      
+      window.addEventListener('message', messageHandler);
+      
+      return () => {
+        window.removeEventListener('message', messageHandler);
+        window.parent.postMessage({
+          type: 'chatVisibility',
+          isOpen: false
+        }, '*');
+      };
     }
-  };
-  handleResize();
-  const observer = new MutationObserver(handleResize);
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true
-  });
-  window.addEventListener('resize', handleResize);
+  } catch (e) {
+    setIsInIframe(true);
+    console.error("Error checking iframe status:", e);
+  }
+}, [isChatOpen]); 
 
-  return () => {
-    observer.disconnect();
-    window.removeEventListener('resize', handleResize);
-  };
-}, [isChatOpen, showIcons, messages]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1118,14 +1091,24 @@ export default function Chat() {
   }, []);
 
   const toggleChat = () => {
-    setIsChatOpen((prev) => !prev);
-    setIsMaximized(false);
-    setShowQRImage(false);
+  setIsChatOpen((prev) => !prev);
+  setIsMaximized(false);
+  setShowQRImage(false);
 
-    if (!isChatOpen) {
-      sendInitialMessages();
+  if (!isChatOpen) {
+    sendInitialMessages();
+  }
+  if (isInIframe) {
+    try {
+      window.parent.postMessage({
+        type: 'chatVisibility',
+        isOpen: !isChatOpen
+      }, '*');
+    } catch (e) {
+      console.error("Error sending message to parent:", e);
     }
-  };
+  }
+};
 
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
@@ -1240,8 +1223,7 @@ export default function Chat() {
     ] || translations.en;
 
   return (
-    <div className={`${isInIframe ? 'fixed bottom-0 right-0 w-auto h-auto' : 'flex flex-col min-h-screen'}`}
-     style={isInIframe ? { pointerEvents: 'auto' } : {}}>
+    <div  className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
       <TooltipProvider>
         {!showIcons && !isChatOpen && (
           <div
