@@ -83,8 +83,8 @@
   container.style.position = 'fixed';
   container.style.bottom = '0';
   container.style.right = '0';
-  container.style.width = '90px'; 
-  container.style.height = '90px';
+  container.style.width = '150px'; 
+  container.style.height = '150px';
   container.style.pointerEvents = 'none'; 
   container.style.zIndex = '9999';
   container.style.transition = 'all 0.4s ease-in-out';
