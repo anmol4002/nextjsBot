@@ -34,8 +34,8 @@
     if (event.data && event.data.type === 'widgetState') {
       switch(event.data.state) {
         case 'icon':
-          container.style.width = '80px';
-          container.style.height = '80px';
+          container.style.width = '90px';
+          container.style.height = '90px';
           break;
         case 'icons':
           container.style.width = '700px';
