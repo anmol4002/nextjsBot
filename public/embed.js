@@ -122,11 +122,14 @@
 
   window.addEventListener('message', function(event) {
    
-    const allowedOrigins = [
-      'https://nextjs-bot-ten.vercel.app',
-      window.location.origin,
-      'https://connect.punjab.gov.in'
-    ];
+ const allowedOrigins = [
+  'https://nextjs-bot-ten.vercel.app',
+  window.location.origin,
+  'https://connect.punjab.gov.in',
+  'http://localhost',
+  'https://localhost',
+  'https://github.com'
+];
     
     if (!allowedOrigins.includes(event.origin)) {
       return; 
