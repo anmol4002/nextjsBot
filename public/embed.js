@@ -163,8 +163,8 @@
   function resizeIframe() {
     try {
       // Let the iframe content determine its size
-      container.style.width = 'auto';
-      container.style.height = 'auto';
+      container.style.width = '800px';
+      container.style.height = '800px';
     } catch (e) {
       console.error("Error resizing iframe:", e);
     }
