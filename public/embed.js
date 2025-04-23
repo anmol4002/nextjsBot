@@ -84,8 +84,8 @@
   var iframe = document.createElement('iframe');
   iframe.id = 'punjab-bot-iframe';
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
-  iframe.style.width = '80%';
-  iframe.style.height = '90%';
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.pointerEvents = 'auto'; 
