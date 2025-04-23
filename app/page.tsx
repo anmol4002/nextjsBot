@@ -585,18 +585,23 @@ useEffect(() => {
   }
 }, []);
   
-  useEffect(() => {
-    if (isInIframe) {
-      let currentState = "icon";
-      if (!showIcons && !isChatOpen) currentState = "icon";
-      if (showIcons) currentState = "icons";
-      if (isChatOpen && !isMaximized && !showQRImage) currentState = "chat";
-      if (isMaximized) currentState = "maximized";
-      if (showQRImage) currentState = "qr";
+useEffect(() => {
+  if (isInIframe) {
+  
+    let currentState = "icon";
+    if (isChatOpen) {
+      currentState = isMaximized ? "maximized" : showQRImage ? "qr" : "chat";
+    } else if (showIcons) {
 
-      sendMessageToParent(currentState);
+      currentState = "icons";
+    } else {
+  
+      currentState = "icon";
     }
-  }, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
+
+    sendMessageToParent(currentState);
+  }
+}, [isInIframe, showIcons, isChatOpen, isMaximized, showQRImage]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -614,27 +619,28 @@ useEffect(() => {
     };
   }, []);
 
- const toggleChat = () => {
+const toggleChat = () => {
   const newChatState = !isChatOpen;
   setIsChatOpen(newChatState);
   setIsMaximized(false);
   setShowQRImage(false);
-
+  
   if (newChatState) {
-    setShowIcons(false); 
-    sendMessageToParent("chat");
+   
     sendInitialMessages();
+    sendMessageToParent("chat");
   } else {
-    setShowIcons(false); 
-    sendMessageToParent("icon");
+   
+    setShowIcons(true);
+    sendMessageToParent("icons");
   }
 };
 
-  const handleCloseChat = () => {
-    setIsChatOpen(false);
-    setShowIcons(true);
-    sendMessageToParent("icons");
-  };
+const handleCloseChat = () => {
+  setIsChatOpen(false);
+  setShowIcons(true); 
+  sendMessageToParent("icons");
+};
 
   const handleLanguageChange = async (selectedLanguage: string) => {
     setIsLanguageDropdownOpen(false);
@@ -700,15 +706,23 @@ useEffect(() => {
     }
   };
 
-  const toggleIcons = () => {
-    const newIconsState = !showIcons;
-    setShowIcons(newIconsState);
-    if (newIconsState) {
-      sendMessageToParent("icons");
-    } else {
+const toggleIcons = () => {
+  const newIconsState = !showIcons;
+  setShowIcons(newIconsState);
+  
+  if (newIconsState) {
+
+    sendMessageToParent("icons");
+  } else {
+  
+    if (!isChatOpen) {
       sendMessageToParent("icon");
+    } else {
+    
+      sendMessageToParent("chat");
     }
-  };
+  }
+}
 
   const handleMaximize = () => {
     setIsMaximized(true);
@@ -766,7 +780,7 @@ useEffect(() => {
       className={`${isInIframe ? "pt-0 bg-transparent" : "flex flex-col min-h-screen"}`}
     >
       <TooltipProvider delayDuration={300} skipDelayDuration={0}>
-      {(!showIcons && !isChatOpen) && (
+     {(!showIcons && !isChatOpen) && (
   <div
     className={`fixed bottom-4 right-6 z-50 ${
       !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
@@ -778,7 +792,8 @@ useEffect(() => {
           ref={chatIconRef}
           onClick={toggleIcons}
           size="icon"
-          className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
+          className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
+          style={isInIframe ? { boxShadow: 'none' } : {}}
           aria-label="Toggle chat icons"
         >
           <div className="transition-transform duration-500 ease-out">
