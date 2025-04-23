@@ -200,3 +200,16 @@ body {
 
 
 
+
+
+#punjab-gov-chatbot-container iframe, 
+#punjab-gov-chatbot-container {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
+
+button, [role='button'], [onclick], a {
+  pointer-events: auto !important;
+}
+
