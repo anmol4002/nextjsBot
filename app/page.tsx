@@ -1009,7 +1009,6 @@ export default function Chat() {
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
- const widgetRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const [showQRImage, setShowQRImage] = useState(false);
   const [language, setLanguage] = useState("auto");
@@ -1031,28 +1030,27 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-   useEffect(() => {
-    try {
-      setIsInIframe(window.self !== window.top);
-      
+    useEffect(() => {
+    const handleMessage = () => {
       if (window.self !== window.top) {
-        document.body.style.pointerEvents = 'auto';
-        if (widgetRef.current) {
-          widgetRef.current.style.pointerEvents = 'auto';
+        if (isChatOpen || showIcons) {
+          window.parent.postMessage("widgetOpen", "*");
+        } else {
+          window.parent.postMessage("widgetClosed", "*");
         }
       }
-    } catch (e) {
-      setIsInIframe(true);
-      console.error("Error checking iframe status:", e);
-    }
-    const interactionCheck = setInterval(() => {
-      if (widgetRef.current) {
-        widgetRef.current.style.pointerEvents = 'auto';
-      }
-    }, 1000);
+    };
 
-    return () => clearInterval(interactionCheck);
-  }, []);
+    handleMessage();
+    const timer = setTimeout(handleMessage, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (window.self !== window.top) {
+        window.parent.postMessage("widgetClosed", "*");
+      }
+    };
+  }, [isChatOpen, showIcons]);
 
 
   useEffect(() => {
@@ -1194,9 +1192,7 @@ export default function Chat() {
     ] || translations.en;
 
 return (
-    <div 
-      ref={widgetRef}
-      className={`${isInIframe ? 'fixed bottom-0 right-0 w-auto h-auto' : 'flex flex-col min-h-screen'}`}
+    <div className={`${isInIframe ? 'fixed bottom-0 right-0 w-auto h-auto' : 'flex flex-col min-h-screen'}`}
       style={{
         pointerEvents: 'auto',
         WebkitUserSelect: 'auto',
