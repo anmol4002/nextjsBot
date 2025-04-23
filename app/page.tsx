@@ -1,3 +1,4 @@
+
 "use client";
 import dynamic from "next/dynamic";
 
@@ -127,7 +128,7 @@ export default function Chat() {
     setIsChatOpen(newChatState);
     setIsMaximized(false);
     setShowQRImage(false);
-    setShowIcons(true); 
+    setShowIcons(true); // Keep icons visible when chat is opened
     
     if (newChatState) {
       sendMessageToParent("chat");
@@ -139,7 +140,7 @@ export default function Chat() {
 
   const handleCloseChat = () => {
     setIsChatOpen(false);
-    setShowIcons(true); 
+    setShowIcons(true); // Show icons when chat is closed
     sendMessageToParent("icons");
   };
 
@@ -250,7 +251,7 @@ export default function Chat() {
   const handleCloseQR = () => {
     setShowQRImage(false);
     setIsChatOpen(false);
-    setShowIcons(true); 
+    setShowIcons(true); // Show icons when QR is closed
     sendMessageToParent("icons");
   };
 
@@ -475,6 +476,11 @@ export default function Chat() {
     </div>
   );
 }
+
+
+
+
+
 
 
 
