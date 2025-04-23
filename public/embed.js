@@ -1,21 +1,21 @@
-(function() {
+// (function() {
  
-  var iframe = document.createElement('iframe');
-  iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
-  iframe.style.position = 'fixed';
-  iframe.style.bottom = '0';
-  iframe.style.right = '2px';
-  iframe.style.width = '100%'; 
-  iframe.style.height = '100%'; 
+//   var iframe = document.createElement('iframe');
+//   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
+//   iframe.style.position = 'fixed';
+//   iframe.style.bottom = '0';
+//   iframe.style.right = '2px';
+//   iframe.style.width = '100%'; 
+//   iframe.style.height = '100%'; 
   
-  iframe.style.border = 'none';
-  iframe.style.background = 'transparent';
-  iframe.style.zIndex = '9999';
-  iframe.title = 'Punjab Government Chatbot';
+//   iframe.style.border = 'none';
+//   iframe.style.background = 'transparent';
+//   iframe.style.zIndex = '9999';
+//   iframe.title = 'Punjab Government Chatbot';
   
-  // Append the iframe to the body
-  document.body.appendChild(iframe);
-})();
+//   // Append the iframe to the body
+//   document.body.appendChild(iframe);
+// })();
 
 
 
@@ -128,4 +128,39 @@
 //   };
 // })();
 
+// 🌸🌸🌸🌸🌸
+(function() {
+  // Create container div
+  var container = document.createElement('div');
+  container.id = 'punjab-gov-chatbot-container';
+  container.style.position = 'fixed';
+  container.style.bottom = '0';
+  container.style.right = '0';
+  container.style.zIndex = '9999';
+  container.style.pointerEvents = 'none'; // Allows clicks to pass through
+  
+  // Create iframe
+  var iframe = document.createElement('iframe');
+  iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
+  iframe.style.border = 'none';
+  iframe.style.background = 'transparent';
+  iframe.style.width = 'auto';
+  iframe.style.height = 'auto';
+  iframe.style.pointerEvents = 'none'; 
+  iframe.title = 'Punjab Government Chatbot';
+  
+
+  container.appendChild(iframe);
+  document.body.appendChild(container);
+
+  window.addEventListener('message', function(event) {
+    if (event.data.type === 'chatVisibility') {
+      if (event.data.isOpen) {
+        iframe.style.pointerEvents = 'auto';
+      } else {
+        iframe.style.pointerEvents = 'none';
+      }
+    }
+  });
+})();
 
