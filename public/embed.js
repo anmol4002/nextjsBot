@@ -132,66 +132,43 @@
 
 
 (function() {
-  // Create container div
+
   var container = document.createElement('div');
   container.id = 'punjab-gov-chatbot-container';
   container.style.position = 'fixed';
   container.style.bottom = '0';
   container.style.right = '0';
   container.style.zIndex = '9999';
-  container.style.pointerEvents = 'none'; // Allows clicks to pass through
+  container.style.pointerEvents = 'none';
   container.style.width = 'auto';
   container.style.height = 'auto';
 
-  // Create iframe
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
-  iframe.style.width = '100%'; // Let content determine width
-  iframe.style.height = '100%'; // Let content determine height
-  iframe.style.minWidth = '0'; // Allow shrinking
-  iframe.style.minHeight = '0'; // Allow shrinking
-  iframe.style.pointerEvents = 'none'; // Default to allowing clicks through
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  iframe.style.minWidth = '0';
+  iframe.style.minHeight = '0';
+  iframe.style.pointerEvents = 'auto';
   iframe.title = 'Punjab Government Chatbot';
   iframe.allow = 'microphone';
-  iframe.style.overflow = 'hidden'; // Prevent scrollbars
+  iframe.style.overflow = 'hidden';
   
-  // Add iframe to container
+
   container.appendChild(iframe);
   document.body.appendChild(container);
 
-  // Function to handle widget interactions
-  function handleWidgetInteraction(state) {
-    if (state === 'chatOpen') {
-      // When chat is open
-      iframe.style.pointerEvents = 'auto';
-      container.style.width = '95%';
-      container.style.maxWidth = '500px';
-      container.style.height = '70vh';
-    } 
-    else if (state === 'iconsOpen') {
-      // When just icons are open
-      iframe.style.pointerEvents = 'auto';
-      container.style.width = '95%';
-      container.style.maxWidth = '500px';
-      container.style.height = 'auto';
-    }
-    else {
-      // When completely closed
-      iframe.style.pointerEvents = 'none';
+  function resizeIframe() {
+    try {
+      // Let the iframe content determine its size
       container.style.width = 'auto';
       container.style.height = 'auto';
+    } catch (e) {
+      console.error("Error resizing iframe:", e);
     }
   }
-
-  // Listen for messages from iframe
-  window.addEventListener('message', function(event) {
-    if (event.data.type === 'widgetState') {
-      handleWidgetInteraction(event.data.state);
-    }
-  });
-
-  // Set initial state
-  handleWidgetInteraction('closed');
+  resizeIframe();
+  setInterval(resizeIframe, 1000);
 })();
