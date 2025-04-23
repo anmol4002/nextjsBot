@@ -129,6 +129,9 @@
 // })();
 
 // 🌸🌸🌸🌸🌸
+
+
+
 (function() {
   // Create container div
   var container = document.createElement('div');
@@ -138,29 +141,58 @@
   container.style.right = '0';
   container.style.zIndex = '9999';
   container.style.pointerEvents = 'none'; // Allows clicks to pass through
-  
+  container.style.width = 'auto';
+  container.style.height = 'auto';
+
   // Create iframe
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
-  iframe.style.width = 'auto';
-  iframe.style.height = 'auto';
-  iframe.style.pointerEvents = 'none'; 
+  iframe.style.width = '100%'; // Let content determine width
+  iframe.style.height = '100%'; // Let content determine height
+  iframe.style.minWidth = '0'; // Allow shrinking
+  iframe.style.minHeight = '0'; // Allow shrinking
+  iframe.style.pointerEvents = 'none'; // Default to allowing clicks through
   iframe.title = 'Punjab Government Chatbot';
+  iframe.allow = 'microphone';
+  iframe.style.overflow = 'hidden'; // Prevent scrollbars
   
-
+  // Add iframe to container
   container.appendChild(iframe);
   document.body.appendChild(container);
 
+  // Function to handle widget interactions
+  function handleWidgetInteraction(state) {
+    if (state === 'chatOpen') {
+      // When chat is open
+      iframe.style.pointerEvents = 'auto';
+      container.style.width = '95%';
+      container.style.maxWidth = '500px';
+      container.style.height = '70vh';
+    } 
+    else if (state === 'iconsOpen') {
+      // When just icons are open
+      iframe.style.pointerEvents = 'auto';
+      container.style.width = '95%';
+      container.style.maxWidth = '500px';
+      container.style.height = 'auto';
+    }
+    else {
+      // When completely closed
+      iframe.style.pointerEvents = 'none';
+      container.style.width = 'auto';
+      container.style.height = 'auto';
+    }
+  }
+
+  // Listen for messages from iframe
   window.addEventListener('message', function(event) {
-    if (event.data.type === 'chatVisibility') {
-      if (event.data.isOpen) {
-        iframe.style.pointerEvents = 'auto';
-      } else {
-        iframe.style.pointerEvents = 'none';
-      }
+    if (event.data.type === 'widgetState') {
+      handleWidgetInteraction(event.data.state);
     }
   });
-})();
 
+  // Set initial state
+  handleWidgetInteraction('closed');
+})();
