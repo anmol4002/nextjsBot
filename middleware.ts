@@ -5,7 +5,9 @@ const allowedDomains = [
   'localhost',
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
-  'github.com' 
+  'github.com',
+  'github.io',  
+  'anmolbenipal.github.io'  
 ]
 
 export function middleware(request: NextRequest) {
@@ -25,7 +27,8 @@ export function middleware(request: NextRequest) {
  
   const isAllowed = allowedDomains.some(allowed => 
     domain === allowed || 
-    domain.endsWith(`.${allowed}`) 
+    domain.endsWith(`.${allowed}`) ||
+  domain.endsWith(`${allowed}`)
   )
   
   if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
