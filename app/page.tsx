@@ -1075,6 +1075,32 @@ export default function Chat() {
     };
   }, [isChatOpen, showIcons]);
 
+ useEffect(() => {
+  const handleResize = () => {
+    if (window.self !== window.top) {
+      // Send height to parent for proper sizing
+      const height = document.documentElement.scrollHeight;
+      window.parent.postMessage({
+        type: 'resize',
+        height: height
+      }, '*');
+    }
+  };
+  handleResize();
+  const observer = new MutationObserver(handleResize);
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true
+  });
+  window.addEventListener('resize', handleResize);
+
+  return () => {
+    observer.disconnect();
+    window.removeEventListener('resize', handleResize);
+  };
+}, [isChatOpen, showIcons, messages]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -1214,7 +1240,8 @@ export default function Chat() {
     ] || translations.en;
 
   return (
-    <div className={`${isInIframe ? 'fixed bottom-0 right-0 w-auto h-auto' : 'flex flex-col min-h-screen'}`}>
+    <div className={`${isInIframe ? 'fixed bottom-0 right-0 w-auto h-auto' : 'flex flex-col min-h-screen'}`}
+     style={isInIframe ? { pointerEvents: 'auto' } : {}}>
       <TooltipProvider>
         {!showIcons && !isChatOpen && (
           <div
