@@ -296,7 +296,7 @@ const toggleIcons = () => {
     <div
       className={`${isInIframe ? "pt-0 bg-transparent" : "flex flex-col min-h-screen"}`}
     >
-      <TooltipProvider delayDuration={300} skipDelayDuration={0}>
+      <TooltipProvider>
      {(!showIcons && !isChatOpen) && (
   <div
     className={`fixed bottom-4 right-6 z-50 ${
