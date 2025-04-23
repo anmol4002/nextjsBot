@@ -132,35 +132,46 @@
 
 
 (function() {
+  // Create container div
   var container = document.createElement('div');
   container.id = 'punjab-gov-chatbot-container';
   container.style.position = 'fixed';
   container.style.bottom = '0';
   container.style.right = '0';
   container.style.zIndex = '9999';
-  container.style.pointerEvents = 'auto'; 
+  container.style.width = 'auto';
+  container.style.height = 'auto';
+  container.style.overflow = 'visible';
 
+  // Create iframe
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
-  iframe.style.width = '120px'; 
-  iframe.style.height = '120px'; /
-  iframe.style.pointerEvents = 'auto'; 
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
   iframe.title = 'Punjab Government Chatbot';
+  iframe.allow = 'microphone';
+  iframe.style.overflow = 'visible';
   
+  // Make absolutely sure iframe is interactive
+  iframe.style.pointerEvents = 'auto';
+  iframe.style.userSelect = 'auto';
+  iframe.style.webkitUserSelect = 'auto';
+
+  // Add iframe to container
   container.appendChild(iframe);
   document.body.appendChild(container);
-  
-  window.addEventListener('message', function(event) {
-    if (event.data.type === 'chatVisibility') {
-      if (event.data.isOpen) {
-        iframe.style.width = '600px'; 
-        iframe.style.height = '800px';
-      } else {
-        iframe.style.width = '120px'; 
-        iframe.style.height = '120px';
-      }
-    }
-  });
+
+  // Function to force enable interactions
+  function enableInteractions() {
+    iframe.style.pointerEvents = 'auto';
+    container.style.pointerEvents = 'none'; // Container doesn't block clicks
+  }
+
+  // Initial enable
+  enableInteractions();
+
+  // Continuously ensure interactions are enabled
+  setInterval(enableInteractions, 1000);
 })();
