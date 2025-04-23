@@ -1009,6 +1009,7 @@ export default function Chat() {
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+ const widgetRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const [showQRImage, setShowQRImage] = useState(false);
   const [language, setLanguage] = useState("auto");
