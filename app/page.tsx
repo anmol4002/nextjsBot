@@ -1105,7 +1105,6 @@ export default function Chat() {
    
   }, []);
 
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -1138,7 +1137,7 @@ export default function Chat() {
       message:
         selectedLanguage === "auto"
           ? "Switching to auto language detection..."
-          : Switching to ${getLanguageLabel(selectedLanguage)}...,
+          : `Switching to ${getLanguageLabel(selectedLanguage)}...`,
       type: "loading",
       icon: <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />,
     } as Toast);
@@ -1150,7 +1149,7 @@ export default function Chat() {
         message:
           selectedLanguage === "auto"
             ? "Auto language detection enabled"
-            : Switched to ${getLanguageLabel(selectedLanguage)},
+            : `Switched to ${getLanguageLabel(selectedLanguage)}`,
         type: "success",
         duration: 2000,
       } as Toast);
@@ -1200,7 +1199,6 @@ export default function Chat() {
   const handleMaximize = () => setIsMaximized(true);
   const handleRestore = () => setIsMaximized(false);
 
-  
   const handleResetChat = () => {
     resetChat();
     setIsDepartmentLocked(false);
@@ -1238,11 +1236,9 @@ export default function Chat() {
       language === "auto" ? "en" : (language as keyof typeof translations)
     ] || translations.en;
 
-
-
   return (
 
-    <div className={${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}}>
+    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
 
       <TooltipProvider>
         {!showIcons  && (
@@ -1312,7 +1308,7 @@ export default function Chat() {
                 <div
                   key={index}
                   className="animate-iconAppear flex-shrink-0"
-                  style={{ animationDelay: ${index * 0.1}s }}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
