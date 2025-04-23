@@ -730,11 +730,9 @@ const toggleIcons = () => {
     sendMessageToParent("icons");
   } else {
     if(!isChatOpen) {
-      sendMessageToParent("icons");
-    }
-    if (!isChatOpen && !showIcons) {
       sendMessageToParent("icon");
-    } else {
+    }
+    else {
       sendMessageToParent("chat");
     }
   }
