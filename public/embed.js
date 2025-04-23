@@ -84,9 +84,10 @@
   container.style.pointerEvents = 'none'; 
   container.style.zIndex = '9999';
   container.style.transition = 'all 0.4s ease-in-out';
-  
-  
-  container.style.paddingTop = '40px';
+  container.style.paddingTop = '40px'; 
+ 
+  container.style.filter = 'none';
+  container.style.boxShadow = 'none';
   
   var iframe = document.createElement('iframe');
   iframe.id = 'punjab-bot-iframe';
@@ -96,6 +97,7 @@
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.pointerEvents = 'auto'; 
+  iframe.style.boxShadow = 'none';
   iframe.title = 'Punjab Government Chatbot';
   
   container.appendChild(iframe);
@@ -107,17 +109,20 @@
     if (event.data && event.data.type === 'widgetState') {
       switch(event.data.state) {
         case 'icon':
+   
           container.style.width = '80px';
           container.style.height = '80px';
           container.style.paddingTop = '40px'; 
           break;
         case 'icons':
+        
           container.style.width = '700px';
           container.style.maxWidth = '95%';
           container.style.height = '80px';
           container.style.paddingTop = '40px'; 
           break;
-        case 'chat': 
+        case 'chat':
+        
           container.style.width = '700px';
           container.style.maxWidth = '95%';
           container.style.height = '800px';
@@ -125,6 +130,7 @@
           container.style.paddingTop = '0'; 
           break;
         case 'maximized':
+         
           container.style.width = '100%';
           container.style.height = '100%';
           container.style.right = '0';
@@ -134,6 +140,7 @@
           container.style.paddingTop = '0'; 
           break;
         case 'qr':
+        
           container.style.width = '700px';
           container.style.maxWidth = '95%';
           container.style.height = '800px';
@@ -143,7 +150,5 @@
     }
   });
 })();
-
-
 
 
