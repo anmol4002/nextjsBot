@@ -950,26 +950,33 @@
 
 
 
-
 "use client";
 import dynamic from "next/dynamic";
+
+const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
+const CardContent = dynamic(() => import("@/components/Card/CardContent"));
+const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
+const PrivacyPolicyModal = dynamic(
+  () => import("@/components/PrivacyPolicyModal")
+);
+const QRCard = dynamic(() => import("@/components/Card/QRCard"));
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Toast } from "@/components/Toast";
 import { TRANSLATIONS } from "@/lib/mapping";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
+
 import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
+
 import { useCustomChat } from "@/hooks/useCustomChat";
 import { translations, departmentTranslations } from "@/lib/mapping";
-
-// Dynamic imports
-const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
-const CardContent = dynamic(() => import("@/components/Card/CardContent"));
-const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
-const PrivacyPolicyModal = dynamic(() => import("@/components/PrivacyPolicyModal"));
-const QRCard = dynamic(() => import("@/components/Card/QRCard"));
 
 interface Toast {
   message: string;
@@ -978,30 +985,34 @@ interface Toast {
   duration?: number;
 }
 
-const getDepartmentInfo = (currentLanguage: string, currentDepartment: string) => {
+const getDepartmentInfo = (
+  currentLanguage: string,
+  currentDepartment: string
+) => {
   const lang = currentLanguage === "auto" ? "en" : currentLanguage;
-  const deptMap = departmentTranslations[lang as keyof typeof departmentTranslations] || departmentTranslations.en;
-  return deptMap[currentDepartment as keyof typeof deptMap] || deptMap["punchatbotindex"];
+  const deptMap =
+    departmentTranslations[lang as keyof typeof departmentTranslations] ||
+    departmentTranslations.en;
+  return (
+    deptMap[currentDepartment as keyof typeof deptMap] ||
+    deptMap["punchatbotindex"]
+  );
 };
 
 export default function Chat() {
-  // State management
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isInIframe, setIsInIframe] = useState(false);
-  const [showQRImage, setShowQRImage] = useState(false);
-  const [language, setLanguage] = useState("auto");
 
-  // Refs
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
-  const widgetRef = useRef<HTMLDivElement>(null);
-
-  // Chat hook
+  const [showQRImage, setShowQRImage] = useState(false);
+  const [language, setLanguage] = useState("auto");
+  
   const {
     messages,
     input,
@@ -1019,12 +1030,10 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
-  // Detect iframe and ensure interactivity
-  useEffect(() => {
+   useEffect(() => {
     try {
       setIsInIframe(window.self !== window.top);
       
-      // Force enable interactions in iframe
       if (window.self !== window.top) {
         document.body.style.pointerEvents = 'auto';
         if (widgetRef.current) {
@@ -1035,8 +1044,6 @@ export default function Chat() {
       setIsInIframe(true);
       console.error("Error checking iframe status:", e);
     }
-
-    // Continuous interaction check
     const interactionCheck = setInterval(() => {
       if (widgetRef.current) {
         widgetRef.current.style.pointerEvents = 'auto';
@@ -1046,10 +1053,24 @@ export default function Chat() {
     return () => clearInterval(interactionCheck);
   }, []);
 
-  // Other existing effects remain the same...
-  // (language dropdown click outside, etc.)
 
-  const toggleChat = () => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
     setIsMaximized(false);
     setShowQRImage(false);
@@ -1059,12 +1080,119 @@ export default function Chat() {
     }
   };
 
-  // All other existing functions remain the same...
-  // (handleLanguageChange, toggleLanguageDropdown, getLanguageLabel, onSubmit, etc.)
+  const handleLanguageChange = async (selectedLanguage: string) => {
+    setIsLanguageDropdownOpen(false);
+    setToast({
+      message:
+        selectedLanguage === "auto"
+          ? "Switching to auto language detection..."
+          : `Switching to ${getLanguageLabel(selectedLanguage)}...`,
+      type: "loading",
+      icon: <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />,
+    } as Toast);
+    try {
+      setLanguage(selectedLanguage);
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const t = translations[language === "auto" ? "en" : (language as keyof typeof translations)] || translations.en;
+      setToast({
+        message:
+          selectedLanguage === "auto"
+            ? "Auto language detection enabled"
+            : `Switched to ${getLanguageLabel(selectedLanguage)}`,
+        type: "success",
+        duration: 2000,
+      } as Toast);
+    } catch (error) {
+      console.error("Language change error:", error);
+      setToast({
+        message: "Failed to change language. Please try again.",
+        type: "error",
+        duration: 2000,
+      } as Toast);
+    }
+  };
 
-  return (
+  const toggleLanguageDropdown = () => {
+    setIsLanguageDropdownOpen((prev) => !prev);
+  };
+
+  const getLanguageLabel = (lang: string) => {
+    switch (lang) {
+      case "en":
+        return "English";
+      case "pa":
+        return "ਪੰਜਾਬੀ";
+      case "hi":
+        return "हिंदी";
+      case "auto":
+        return "Auto";
+      default:
+        return "Auto";
+    }
+  };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await handleSubmit(e, input);
+    } catch (err) {
+      console.error("Error in onSubmit:", err);
+      setToast({
+        message: "Failed to send message. Please try again.",
+        type: "error",
+      } as Toast);
+    }
+  };
+
+  const toggleIcons = () => {
+    setShowIcons((prev) => !prev);
+    if (showIcons) {
+      setIsChatOpen(false);
+    }
+  };
+
+  const handleMaximize = () => setIsMaximized(true);
+  const handleRestore = () => setIsMaximized(false);
+
+  const handleResetChat = () => {
+    resetChat();
+    setIsDepartmentLocked(false);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleWhatsAppClick = () =>
+    window.open("https://wa.me/919855501076", "_blank");
+
+  const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
+
+  const handleQRClick = () => {
+    setIsChatOpen(true);
+    setShowQRImage(true);
+    setIsMaximized(false);
+  };
+
+  const handleCloseQR = () => {
+    setShowQRImage(false);
+    setIsChatOpen(false);
+  };
+
+  const sendDepartmentMessage = (department: string) => {
+    const customEvent = {
+      preventDefault: () => {},
+    } as React.FormEvent<HTMLFormElement>;
+
+    handleSubmit(customEvent, department);
+    setIsDepartmentLocked(true);
+  };
+
+  const t =
+    translations[
+      language === "auto" ? "en" : (language as keyof typeof translations)
+    ] || translations.en;
+
+return (
     <div 
       ref={widgetRef}
       className={`${isInIframe ? 'fixed bottom-0 right-0 w-auto h-auto' : 'flex flex-col min-h-screen'}`}
@@ -1251,7 +1379,6 @@ export default function Chat() {
     </div>
   );
 }
-
 
 
 
