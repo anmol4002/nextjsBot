@@ -182,38 +182,6 @@ body {
   }
 
 
-/* .maximized-chat {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  z-index: 9999 !important;
-}
-
-
-#punjab-gov-chatbot-container iframe, 
-#punjab-gov-chatbot-container {
-  pointer-events: auto !important;
-  user-select: auto !important;
-  -webkit-user-select: auto !important;
-}
-
-button, [role='button'], [onclick], a {
-  pointer-events: auto !important;
-} */
-
-.chatbot-iframe {
-  transition: all 0.3s ease-in-out;
-}
-
 .maximized-chat {
   position: fixed !important;
   top: 0 !important;
@@ -230,30 +198,15 @@ button, [role='button'], [onclick], a {
   z-index: 9999 !important;
 }
 
-#punjab-gov-chatbot-container {
-  pointer-events: none;
-}
-
 
 #punjab-gov-chatbot-container iframe, 
-#punjab-gov-chatbot-container .chatbot-iframe {
+#punjab-gov-chatbot-container {
   pointer-events: auto !important;
   user-select: auto !important;
   -webkit-user-select: auto !important;
 }
 
-#punjab-gov-chatbot-container.widget-open {
-  pointer-events: auto;
-}
-
 button, [role='button'], [onclick], a {
   pointer-events: auto !important;
-} 
-
-@media screen and (max-width: 600px) {
-  #punjab-gov-chatbot-container iframe:not(.maximized-chat) {
-    max-width: 90vw !important;
-    max-height: 70vh !important;
-    right: 5vw !important;
-  }
 }
+
