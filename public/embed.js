@@ -99,7 +99,7 @@ function loadChatWidget(url) {
   iframe.setAttribute("allowtransparency", "true");
   iframe.setAttribute("class", "chatbot-iframe");
   iframe.setAttribute("frameborder", "0");
-  iframe.setAttribute("scrolling", "no");
+  iframe.setAttribute("scrolling", "yes");
   iframe.style.position = "fixed";
   iframe.style.bottom = "0px";
   iframe.style.right = "0px";
@@ -129,8 +129,8 @@ function loadChatWidget(url) {
   window.addEventListener("message", function (event) {
     if (event.data === "widgetOpen") {
       iframe.style.width = "95%";
-      iframe.style.maxWidth = "450px";
-      iframe.style.height = "550px";
+      iframe.style.maxWidth = "550px";
+      iframe.style.height = "700px";
       widgetContainer.style.width = "auto";
       widgetContainer.style.height = "auto";
     } else if (event.data === "widgetClosed") {
@@ -140,8 +140,8 @@ function loadChatWidget(url) {
       widgetContainer.style.height = "auto";
     } else if (event.data === "widgetMaximized") {
      
-      // widgetContainer.style.top = "0";
-      // widgetContainer.style.left = "0";
+      widgetContainer.style.top = "0";
+      widgetContainer.style.left = "0";
       widgetContainer.style.right = "0";
       widgetContainer.style.bottom = "0";
       widgetContainer.style.width = "100%";
