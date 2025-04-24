@@ -1005,10 +1005,11 @@ export default function Chat() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
 
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  //----
+  
   const [isInIframe, setIsInIframe] = useState(false);
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
