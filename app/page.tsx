@@ -1040,19 +1040,40 @@ export default function Chat() {
     }
   }, []);
 
+  // Send initial state update
+  useEffect(() => {
+    if (isInIframe) {
+      // Force an initial message to parent to set the correct state
+      const initialState = 'icon-only';
+      console.log("Sending initial state to parent:", initialState);
+      try {
+        window.parent.postMessage({
+          type: 'resize',
+          state: initialState
+        }, '*');
+      } catch (err) {
+        console.error("Error sending initial state:", err);
+      }
+    }
+  }, [isInIframe]);
+
   // Notify parent window about size changes when in iframe
   useEffect(() => {
     if (!isInIframe) return;
     
     let state = 'icon-only';
+    
+    // Fix the state determination logic
     if (showIcons) {
       state = 'icons-panel';
-    } else if (isChatOpen && showQRImage) {
-      state = 'chat-open';
-    } else if (isChatOpen && !isMaximized) {
-      state = 'chat-open';
-    } else if (isChatOpen && isMaximized) {
-      state = 'chat-maximized';
+    } else if (isChatOpen) {
+      if (showQRImage) {
+        state = 'chat-open';
+      } else if (isMaximized) {
+        state = 'chat-maximized';
+      } else {
+        state = 'chat-open';
+      }
     }
     
     console.log("Sending resize message to parent:", state, {
@@ -1090,14 +1111,28 @@ export default function Chat() {
 
   const toggleChat = () => {
     console.log("Toggle chat clicked. Current state:", isChatOpen);
-    setIsChatOpen((prev) => !prev);
-    setIsMaximized(false);
     
-    if (!isChatOpen) {
-      // Only reset QR when opening chat
-      setShowQRImage(false);
-      sendInitialMessages();
+    // First close icons panel if it's open
+    if (showIcons) {
+      setShowIcons(false);
     }
+    
+    // Then set chat state with a slight delay to ensure proper ordering of operations
+    setTimeout(() => {
+      setIsChatOpen(true);
+      setShowQRImage(false);
+      setIsMaximized(false);
+      
+      if (!isChatOpen) {
+        sendInitialMessages();
+      }
+      
+      console.log("Chat state updated:", {
+        isChatOpen: true,
+        showQRImage: false,
+        isMaximized: false
+      });
+    }, 50);
   };
 
   const handleLanguageChange = async (selectedLanguage: string) => {
@@ -1166,7 +1201,16 @@ export default function Chat() {
 
   const toggleIcons = () => {
     console.log("Toggle icons clicked. Current state:", showIcons);
-    setShowIcons((prev) => !prev);
+    // Close chat if it's open
+    if (isChatOpen) {
+      setIsChatOpen(false);
+      setShowQRImage(false);
+    }
+    
+    // Toggle icons with slight delay
+    setTimeout(() => {
+      setShowIcons((prev) => !prev);
+    }, 50);
   };
   
   const handleMaximize = () => setIsMaximized(true);
@@ -1187,9 +1231,24 @@ export default function Chat() {
 
   const handleQRClick = () => {
     console.log("QR click. Setting chat open and showing QR image");
-    setShowQRImage(true);
-    setIsChatOpen(true);
-    setIsMaximized(false);
+    
+    // First close icons panel if it's open
+    if (showIcons) {
+      setShowIcons(false);
+    }
+    
+    // Then set QR state with a slight delay
+    setTimeout(() => {
+      setIsChatOpen(true);
+      setShowQRImage(true);
+      setIsMaximized(false);
+      
+      console.log("QR state updated:", {
+        isChatOpen: true,
+        showQRImage: true,
+        isMaximized: false
+      });
+    }, 50);
   };
 
   const handleCloseQR = () => {
@@ -1278,9 +1337,10 @@ export default function Chat() {
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div 
+                      <button 
                         className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                         onClick={item.onClick}
+                        type="button"
                       >
                         <Image
                           src={item.src}
@@ -1289,7 +1349,7 @@ export default function Chat() {
                           height={48}
                           className="rounded-full cursor-pointer hover:scale-110 transition-transform duration-300 ease-out"
                         />
-                      </div>
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent
                       side="top"
@@ -1313,6 +1373,7 @@ export default function Chat() {
                     className="flex items-center justify-center w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
                     aria-label="Close icons"
                     size="icon"
+                    type="button"
                   >
                     <X className="size-6 text-white" />
                   </Button>
