@@ -951,7 +951,6 @@
 // 🌸🌸🌸🌸🌸🌸🌸🌸🌸
 
 
-
 "use client";
 import dynamic from "next/dynamic";
 
@@ -973,7 +972,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
 
-import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
+import { X, MessageCircle, Loader2 } from "lucide-react";
 
 import { useCustomChat } from "@/hooks/useCustomChat";
 import { translations, departmentTranslations } from "@/lib/mapping";
@@ -1032,9 +1031,12 @@ export default function Chat() {
   // Check if running in iframe
   useEffect(() => {
     try {
-      setIsInIframe(window.self !== window.top);
+      const isIframe = window.self !== window.top;
+      setIsInIframe(isIframe);
+      console.log("Running in iframe:", isIframe);
     } catch (e) {
       setIsInIframe(true);
+      console.log("Error checking iframe status, assuming true");
     }
   }, []);
 
@@ -1043,15 +1045,31 @@ export default function Chat() {
     if (!isInIframe) return;
     
     let state = 'icon-only';
-    if (showIcons) state = 'icons-panel';
-    else if (isChatOpen && showQRImage) state = 'chat-open';
-    else if (isChatOpen && !isMaximized) state = 'chat-open';
-    else if (isChatOpen && isMaximized) state = 'chat-maximized';
+    if (showIcons) {
+      state = 'icons-panel';
+    } else if (isChatOpen && showQRImage) {
+      state = 'chat-open';
+    } else if (isChatOpen && !isMaximized) {
+      state = 'chat-open';
+    } else if (isChatOpen && isMaximized) {
+      state = 'chat-maximized';
+    }
     
-    window.parent.postMessage({
-      type: 'resize',
-      state: state
-    }, '*');
+    console.log("Sending resize message to parent:", state, {
+      isChatOpen,
+      showIcons,
+      isMaximized,
+      showQRImage
+    });
+    
+    try {
+      window.parent.postMessage({
+        type: 'resize',
+        state: state
+      }, '*');
+    } catch (err) {
+      console.error("Error posting message to parent:", err);
+    }
   }, [isInIframe, isChatOpen, showIcons, isMaximized, showQRImage]);
 
   useEffect(() => {
@@ -1071,15 +1089,13 @@ export default function Chat() {
   }, []);
 
   const toggleChat = () => {
+    console.log("Toggle chat clicked. Current state:", isChatOpen);
     setIsChatOpen((prev) => !prev);
     setIsMaximized(false);
     
-    // Don't reset showQRImage when closing chat
-    if (isChatOpen) {
-      setShowQRImage(false);
-    }
-
     if (!isChatOpen) {
+      // Only reset QR when opening chat
+      setShowQRImage(false);
       sendInitialMessages();
     }
   };
@@ -1148,7 +1164,10 @@ export default function Chat() {
     }
   };
 
-  const toggleIcons = () => setShowIcons((prev) => !prev);
+  const toggleIcons = () => {
+    console.log("Toggle icons clicked. Current state:", showIcons);
+    setShowIcons((prev) => !prev);
+  };
   
   const handleMaximize = () => setIsMaximized(true);
   const handleRestore = () => setIsMaximized(false);
@@ -1167,13 +1186,14 @@ export default function Chat() {
   const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
 
   const handleQRClick = () => {
-    setIsChatOpen(true);
+    console.log("QR click. Setting chat open and showing QR image");
     setShowQRImage(true);
+    setIsChatOpen(true);
     setIsMaximized(false);
-    // Don't hide the icons panel
   };
 
   const handleCloseQR = () => {
+    console.log("Closing QR and chat");
     setShowQRImage(false);
     setIsChatOpen(false);
   };
@@ -1258,14 +1278,16 @@ export default function Chat() {
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                      <div 
+                        className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                        onClick={item.onClick}
+                      >
                         <Image
                           src={item.src}
                           alt={item.alt}
                           width={48}
                           height={48}
                           className="rounded-full cursor-pointer hover:scale-110 transition-transform duration-300 ease-out"
-                          onClick={item.onClick}
                         />
                       </div>
                     </TooltipTrigger>
