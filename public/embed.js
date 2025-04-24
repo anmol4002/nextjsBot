@@ -98,8 +98,8 @@
   iframe.style.position = 'fixed';
   iframe.style.bottom = '0';
   iframe.style.right = '0';
-  iframe.style.width = '80px'; 
-  iframe.style.height = '80px';
+  iframe.style.width = '150px'; 
+  iframe.style.height = '150px';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '9999';
@@ -109,7 +109,7 @@
   
   document.body.appendChild(iframe);
   
-  // Keep track of the current state to handle transitions correctly
+ 
   var currentState = 'icon-only';
   
   window.addEventListener('message', function(event) {
@@ -118,31 +118,27 @@
     if (event.data.type === 'resize') {
       var newState = event.data.state;
       
-      // Update sizes based on state
       if (newState === 'icon-only') {
-        iframe.style.width = '80px';
-        iframe.style.height = '80px';
+        iframe.style.width = '150px';
+        iframe.style.height = '150px';
       } else if (newState === 'icons-panel') {
         iframe.style.width = '500px';
         iframe.style.height = '80px';
       } else if (newState === 'chat-open' || newState === 'qr-open') {
-        iframe.style.width = '380px';
-        iframe.style.height = showIconsPanel(newState, currentState) ? '680px' : '600px';
+        iframe.style.width = '500px';
+        iframe.style.height = showIconsPanel(newState, currentState) ? '700px' : '600px';
       } else if (newState === 'chat-maximized') {
         iframe.style.width = '100%';
         iframe.style.height = '100%';
-        iframe.style.top = '0';
-        iframe.style.left = '0';
+        iframe.style.bottom = '0';
+        iframe.style.right = '0';
       }
       
-      // Save the current state for transition handling
       currentState = newState;
     }
   });
   
-  // Helper function to determine if icons panel should be shown
   function showIconsPanel(newState, currentState) {
-    // If we're transitioning to chat or QR from icons panel, keep extra height for icons
     return (newState === 'chat-open' || newState === 'qr-open') && 
            (currentState === 'icons-panel' || currentState.includes('open'));
   }
