@@ -111,57 +111,40 @@
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '99999';
-  iframe.style.borderRadius = '12px';
+  iframe.style.borderRadius = '50%';
+  iframe.style.cursor = 'pointer';
   iframe.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
   iframe.style.transition = 'all 0.3s ease';
   iframe.title = 'Punjab Government Chatbot';
   
-  // Create the toggle button
-  var toggleBtn = document.createElement('div');
-  toggleBtn.innerHTML = `
-    <div style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; 
-                background: #3b82f6; border-radius: 50%; display: flex; 
-                align-items: center; justify-content: center; cursor: pointer;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 99998;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" 
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-    </div>
-  `;
-  
-  // Append elements to the body
+  // Append to the body
   document.body.appendChild(iframe);
-  document.body.appendChild(toggleBtn);
   
-  // Toggle between minimized and maximized states
+  // Toggle between minimized and expanded states
   var isExpanded = false;
-  toggleBtn.addEventListener('click', function() {
-    isExpanded = !isExpanded;
-    if (isExpanded) {
+  iframe.addEventListener('click', function(e) {
+    // Only toggle if clicking on the minimized iframe (not its content)
+    if (!isExpanded) {
+      isExpanded = true;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.bottom = '0';
       iframe.style.right = '0';
       iframe.style.borderRadius = '0';
-    } else {
-      iframe.style.width = '150px';
-      iframe.style.height = '150px';
-      iframe.style.bottom = '20px';
-      iframe.style.right = '20px';
-      iframe.style.borderRadius = '12px';
+      iframe.style.cursor = 'default';
     }
   });
   
-  // Handle messages from the iframe
+  // Handle messages from the iframe (for closing/minimizing)
   window.addEventListener('message', function(event) {
     if (event.data === 'minimizeChat') {
+      isExpanded = false;
       iframe.style.width = '150px';
       iframe.style.height = '150px';
       iframe.style.bottom = '20px';
       iframe.style.right = '20px';
-      iframe.style.borderRadius = '12px';
-      isExpanded = false;
+      iframe.style.borderRadius = '50%';
+      iframe.style.cursor = 'pointer';
     }
   });
   
@@ -170,4 +153,3 @@
     iframe.style.setProperty('bottom', '20px', 'important');
   }, 100);
 })();
-
