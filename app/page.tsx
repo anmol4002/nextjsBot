@@ -1076,7 +1076,6 @@ export default function Chat() {
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
 
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  //----
   const [isInIframe, setIsInIframe] = useState(false);
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
@@ -1111,43 +1110,51 @@ export default function Chat() {
     }
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        languageDropdownRef.current &&
-        !languageDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsLanguageDropdownOpen(false);
-      }
+ useEffect(() => {
+  const targetOrigin = window.location.origin;
+  
 
-      if (
-        widgetRef.current &&
-        !widgetRef.current.contains(event.target as Node) &&
-        !chatIconRef.current?.contains(event.target as Node)
-      ) {
-        if (showIcons || isChatOpen) {
-          setShowIcons(false);
-          setIsChatOpen(false);
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showIcons, isChatOpen]);
+  const state = isChatOpen ? 'chatOpen' : showIcons ? 'showIcons' : 'collapsed';
+  window.parent.postMessage({
+    type: 'widgetState',
+    state: state
+  }, targetOrigin);
 
   
-  useEffect(() => {
-    const targetOrigin = window.location.origin; // Use current origin instead of hardcoding
-    const state = showIcons || isChatOpen ? 'expanded' : 'collapsed';
-    
-    window.parent.postMessage({
-      type: 'widgetState',
-      state: state
-    }, targetOrigin);
-  }, [showIcons, isChatOpen]);
+  const handleParentMessage = (event: MessageEvent) => {
+    if (event.data.type === 'closeWidget') {
+      setShowIcons(false);
+      setIsChatOpen(false);
+    }
+  };
+
+  window.addEventListener('message', handleParentMessage);
+  
+  return () => {
+    window.removeEventListener('message', handleParentMessage);
+  };
+}, [showIcons, isChatOpen]);
+
+
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      widgetRef.current &&
+      !widgetRef.current.contains(event.target as Node) &&
+      !chatIconRef.current?.contains(event.target as Node)
+    ) {
+      if (showIcons || isChatOpen) {
+        setShowIcons(false);
+        setIsChatOpen(false);
+      }
+    }
+  };
+
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [showIcons, isChatOpen]);
 
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
