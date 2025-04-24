@@ -953,7 +953,6 @@
 
 
 
-
 "use client";
 import dynamic from "next/dynamic";
 
@@ -1237,162 +1236,161 @@ export default function Chat() {
           </div>
         )}
 
-        {/* Icons Panel - Always visible when showIcons is true, regardless of chat/QR state */}
-        {showIcons && (
-          <div className="fixed bottom-0 z-40 right-0 w-[500px] mx-auto flex items-center justify-between bg-white rounded-t-[28px] shadow-lg p-2 animate-slideInRight">
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              {[
-                {
-                  src: "/images/finalbot.gif",
-                  alt: "Chatbot",
-                  onClick: toggleChat,
-                  tooltip: "Chat with Punjab Govt. AI Assistant",
-                },
-                {
-                  src: "/images/awhatsapp.gif",
-                  alt: "WhatsApp",
-                  onClick: handleWhatsAppClick,
-                  tooltip: "WhatsApp Chatbot",
-                },
-                {
-                  src: "/images/acall.gif",
-                  alt: "Contact",
-                  onClick: handlePhoneClick,
-                  tooltip: "State Helpline 1100",
-                },
-                {
-                  src: "/images/aqr.gif",
-                  alt: "QR Scan",
-                  onClick: handleQRClick,
-                  tooltip: "QR Code to open Whatsapp Chatbot",
-                },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="animate-iconAppear flex-shrink-0"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                        <Image
-                          src={item.src}
-                          alt={item.alt}
-                          width={48}
-                          height={48}
-                          className="rounded-full cursor-pointer hover:scale-110 transition-transform duration-300 ease-out"
-                          onClick={item.onClick}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="top"
-                      className="bg-gray-800 text-white"
-                    >
-                      <p>{item.tooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              ))}
-            </div>
-
+        {/* Container for Chat/QR and Icons Panel to ensure seamless connection */}
+        <div className="fixed bottom-0 right-0 z-40 flex flex-col items-end">
+          {/* Chat/QR Content */}
+          {isChatOpen && (
             <div
-              className="animate-iconAppear flex-shrink-0 ml-1"
-              style={{ animationDelay: "0.4s" }}
+              className={`${
+                isMaximized
+                  ? "fixed inset-0 bottom-0 p-0 animate-fadeIn z-50"
+                  : "w-[500px] animate-scaleIn"
+              }`}
+              style={{
+                width: isMaximized ? "100%" : "500px",
+                height: isMaximized ? "100vh" : "600px",
+                borderRadius: isMaximized ? "0" : "12px 12px 0 0",
+              }}
             >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={toggleIcons}
-                    className="flex items-center justify-center w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
-                    aria-label="Close icons"
-                    size="icon"
-                  >
-                    <X className="size-6 text-white" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-gray-800 text-white">
-                  <p>Close</p>
-                </TooltipContent>
-              </Tooltip>
+              <Card className="border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out h-full">
+                {showQRImage ? (
+                  <QRCard onClose={handleCloseQR} />
+                ) : (
+                  <>
+                    <div>
+                      <CardHeader
+                        title={t.chatTitle}
+                        emoji={departmentInfo.emoji}
+                        name={departmentInfo.name}
+                        isMaximized={isMaximized}
+                        onMaximize={handleMaximize}
+                        onRestore={handleRestore}
+                        onReset={handleResetChat}
+                        onClose={toggleChat}
+                      />
+                    </div>
+
+                    <div className="m-4 p-0 w-full">
+                      <CardContent
+                        messages={messages}
+                        chatContainerRef={chatContainerRef}
+                        isMaximized={isMaximized}
+                        t={t}
+                        isDepartmentLocked={isDepartmentLocked}
+                        sendDepartmentMessage={sendDepartmentMessage}
+                        TRANSLATIONS={TRANSLATIONS}
+                        language={language}
+                        setIsPolicyModalOpen={setIsPolicyModalOpen}
+                      />
+                    </div>
+
+                    <div
+                      className={`${
+                        isMaximized ? "absolute bottom-0 left-0 right-0" : ""
+                      }`}
+                    >
+                      <CardFooter
+                        input={input}
+                        isLoading={isLoading}
+                        language={language}
+                        isLanguageDropdownOpen={isLanguageDropdownOpen}
+                        onInputChange={handleInputChange}
+                        onSubmit={onSubmit}
+                        onLanguageChange={handleLanguageChange}
+                        onToggleLanguageDropdown={toggleLanguageDropdown}
+                        getLanguageLabel={getLanguageLabel}
+                        t={t}
+                        languageDropdownRef={languageDropdownRef}
+                      />
+                    </div>
+                  </>
+                )}
+              </Card>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Chat/QR Content - Now appears directly above icons with no gap */}
-        {isChatOpen && (
-          <div
-            className={`fixed z-50 ${
-              isMaximized
-                ? "inset-0 bottom-0 p-0 animate-fadeIn"
-                : showIcons 
-                  ? "bottom-[60px] right-0 w-[500px] animate-scaleIn" 
-                  : "bottom-20 right-4 w-[500px] animate-scaleIn"
-            }`}
-            style={{
-              width: isMaximized ? "100%" : undefined,
-              height: isMaximized ? "100vh" : showIcons ? "600px" : "600px",
-              borderRadius: isMaximized ? "0" : showIcons ? "12px 12px 0 0" : "12px",
-              // No bottom margin when icons are showing for seamless connection
-              marginBottom: 0,
-            }}
-          >
-            <Card className="border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out h-full">
-              {showQRImage ? (
-                <QRCard onClose={handleCloseQR} />
-              ) : (
-                <>
-                  <div>
-                    <CardHeader
-                      title={t.chatTitle}
-                      emoji={departmentInfo.emoji}
-                      name={departmentInfo.name}
-                      isMaximized={isMaximized}
-                      onMaximize={handleMaximize}
-                      onRestore={handleRestore}
-                      onReset={handleResetChat}
-                      onClose={toggleChat}
-                    />
-                  </div>
-
-                  <div className="m-4 p-0 w-full">
-                    <CardContent
-                      messages={messages}
-                      chatContainerRef={chatContainerRef}
-                      isMaximized={isMaximized}
-                      t={t}
-                      isDepartmentLocked={isDepartmentLocked}
-                      sendDepartmentMessage={sendDepartmentMessage}
-                      TRANSLATIONS={TRANSLATIONS}
-                      language={language}
-                      setIsPolicyModalOpen={setIsPolicyModalOpen}
-                    />
-                  </div>
-
+          {/* Icons Panel - Always visible when showIcons is true */}
+          {showIcons && (
+            <div className="w-[500px] mx-auto flex items-center justify-between bg-white rounded-t-[28px] shadow-lg p-2 animate-slideInRight">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                {[
+                  {
+                    src: "/images/finalbot.gif",
+                    alt: "Chatbot",
+                    onClick: toggleChat,
+                    tooltip: "Chat with Punjab Govt. AI Assistant",
+                  },
+                  {
+                    src: "/images/awhatsapp.gif",
+                    alt: "WhatsApp",
+                    onClick: handleWhatsAppClick,
+                    tooltip: "WhatsApp Chatbot",
+                  },
+                  {
+                    src: "/images/acall.gif",
+                    alt: "Contact",
+                    onClick: handlePhoneClick,
+                    tooltip: "State Helpline 1100",
+                  },
+                  {
+                    src: "/images/aqr.gif",
+                    alt: "QR Scan",
+                    onClick: handleQRClick,
+                    tooltip: "QR Code to open Whatsapp Chatbot",
+                  },
+                ].map((item, index) => (
                   <div
-                    className={`${
-                      isMaximized ? "absolute bottom-0 left-0 right-0" : ""
-                    }`}
+                    key={index}
+                    className="animate-iconAppear flex-shrink-0"
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <CardFooter
-                      input={input}
-                      isLoading={isLoading}
-                      language={language}
-                      isLanguageDropdownOpen={isLanguageDropdownOpen}
-                      onInputChange={handleInputChange}
-                      onSubmit={onSubmit}
-                      onLanguageChange={handleLanguageChange}
-                      onToggleLanguageDropdown={toggleLanguageDropdown}
-                      getLanguageLabel={getLanguageLabel}
-                      t={t}
-                      languageDropdownRef={languageDropdownRef}
-                    />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="w-12 h-12 flex items-center justify-center rounded-full shadow-md bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                          <Image
+                            src={item.src}
+                            alt={item.alt}
+                            width={48}
+                            height={48}
+                            className="rounded-full cursor-pointer hover:scale-110 transition-transform duration-300 ease-out"
+                            onClick={item.onClick}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        className="bg-gray-800 text-white"
+                      >
+                        <p>{item.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
-                </>
-              )}
-            </Card>
-          </div>
-        )}
+                ))}
+              </div>
+
+              <div
+                className="animate-iconAppear flex-shrink-0 ml-1"
+                style={{ animationDelay: "0.4s" }}
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={toggleIcons}
+                      className="flex items-center justify-center w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
+                      aria-label="Close icons"
+                      size="icon"
+                    >
+                      <X className="size-6 text-white" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-gray-800 text-white">
+                    <p>Close</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          )}
+        </div>
 
         {toast && (
           <Toast
