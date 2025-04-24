@@ -93,67 +93,121 @@
 // 🌸🌸🌸🌸🌸
 
 
+// function loadChatWidget(url) {
+//   var iframe = document.createElement("iframe");
+//   iframe.setAttribute("src", url);
+//   iframe.setAttribute("allowtransparency", "true");
+//   iframe.setAttribute("class", "chatbot-iframe");
+//   iframe.setAttribute("frameborder", "0");
+//   iframe.setAttribute("scrolling", "yes");
+//   iframe.style.position = "fixed";
+//   iframe.style.bottom = "0px";
+//   iframe.style.right = "0px";
+//   iframe.style.width = "auto";
+//   iframe.style.height = "auto";
+//   iframe.style.float = "none";
+//   iframe.style.overflow = "visible";
+//   iframe.style.background = "none";
+//   iframe.style.backgroundColor = "transparent";
+//   iframe.style.zIndex = "99999";
+//   iframe.style.pointerEvents = "auto";
+//   iframe.style.transition = "all 0.3s ease";
+//   document.body.appendChild(iframe);
+  
+ 
+//   var widgetContainer = document.createElement("div");
+//   widgetContainer.id = "punjab-gov-chatbot-container";
+//   widgetContainer.style.position = "fixed";
+//   widgetContainer.style.bottom = "0";
+//   widgetContainer.style.right = "0";
+//   widgetContainer.style.zIndex = "99999";
+//   widgetContainer.style.pointerEvents = "auto";
+//   widgetContainer.style.transition = "all 0.3s ease";
+//   widgetContainer.appendChild(iframe);
+//   document.body.appendChild(widgetContainer);
+  
+//   window.addEventListener("message", function (event) {
+//     if (event.data === "widgetOpen") {
+//       iframe.style.width = "95%";
+//       iframe.style.maxWidth = "500px";
+//       iframe.style.height = "600px";
+//       widgetContainer.style.width = "auto";
+//       widgetContainer.style.height = "auto";
+//     } else if (event.data === "widgetClosed") {
+//       iframe.style.width = "auto";
+//       iframe.style.height = "auto";
+//       widgetContainer.style.width = "auto";
+//       widgetContainer.style.height = "auto";
+//     } else if (event.data === "widgetMaximized") {
+     
+//       widgetContainer.style.top = "0";
+//       widgetContainer.style.left = "0";
+//       widgetContainer.style.right = "0";
+//       widgetContainer.style.bottom = "0";
+//       widgetContainer.style.width = "100%";
+//       widgetContainer.style.height = "100%";
+      
+//       iframe.style.width = "100%";
+//       iframe.style.height = "100%";
+//       iframe.style.maxWidth = "100%";
+//       iframe.style.position = "absolute";
+//       iframe.style.right = "0";
+//       iframe.style.bottom = "0";
+//       iframe.style.zIndex = "999999";
+//     }
+//   });
+// }
+
+// function loadWhenReady(url) {
+//   if (document.readyState === "complete" || 
+//       (document.readyState !== "loading" && !document.documentElement.doScroll)) {
+//     loadChatWidget(url);
+//   } else {
+//     document.addEventListener("DOMContentLoaded", function() {
+//       loadChatWidget(url);
+//     });
+//   }
+// }
+
+// loadWhenReady("https://nextjs-bot-ten.vercel.app/widget");
+
+
+
+
 function loadChatWidget(url) {
+  // Create container first
+  var widgetContainer = document.createElement("div");
+  widgetContainer.id = "punjab-gov-chatbot-container";
+  widgetContainer.className = "chatbot-container";
+  
+  // Create iframe
   var iframe = document.createElement("iframe");
   iframe.setAttribute("src", url);
   iframe.setAttribute("allowtransparency", "true");
   iframe.setAttribute("class", "chatbot-iframe");
   iframe.setAttribute("frameborder", "0");
   iframe.setAttribute("scrolling", "yes");
-  iframe.style.position = "fixed";
-  iframe.style.bottom = "0px";
-  iframe.style.right = "0px";
-  iframe.style.width = "auto";
-  iframe.style.height = "auto";
-  iframe.style.float = "none";
-  iframe.style.overflow = "visible";
-  iframe.style.background = "none";
-  iframe.style.backgroundColor = "transparent";
-  iframe.style.zIndex = "99999";
-  iframe.style.pointerEvents = "auto";
-  iframe.style.transition = "all 0.3s ease";
-  document.body.appendChild(iframe);
   
- 
-  var widgetContainer = document.createElement("div");
-  widgetContainer.id = "punjab-gov-chatbot-container";
-  widgetContainer.style.position = "fixed";
-  widgetContainer.style.bottom = "0";
-  widgetContainer.style.right = "0";
-  widgetContainer.style.zIndex = "99999";
-  widgetContainer.style.pointerEvents = "auto";
-  widgetContainer.style.transition = "all 0.3s ease";
+  // Append iframe to container
   widgetContainer.appendChild(iframe);
   document.body.appendChild(widgetContainer);
   
+  // Handle window messages
   window.addEventListener("message", function (event) {
-    if (event.data === "widgetOpen") {
-      iframe.style.width = "95%";
-      iframe.style.maxWidth = "500px";
-      iframe.style.height = "600px";
-      widgetContainer.style.width = "auto";
-      widgetContainer.style.height = "auto";
-    } else if (event.data === "widgetClosed") {
-      iframe.style.width = "auto";
-      iframe.style.height = "auto";
-      widgetContainer.style.width = "auto";
-      widgetContainer.style.height = "auto";
-    } else if (event.data === "widgetMaximized") {
-     
-      widgetContainer.style.top = "0";
-      widgetContainer.style.left = "0";
-      widgetContainer.style.right = "0";
-      widgetContainer.style.bottom = "0";
-      widgetContainer.style.width = "100%";
-      widgetContainer.style.height = "100%";
-      
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      iframe.style.maxWidth = "100%";
-      iframe.style.position = "absolute";
-      iframe.style.right = "0";
-      iframe.style.bottom = "0";
-      iframe.style.zIndex = "999999";
+    switch(event.data) {
+      case "widgetOpen":
+        widgetContainer.classList.remove("maximized");
+        widgetContainer.classList.add("open");
+        break;
+        
+      case "widgetClosed":
+        widgetContainer.classList.remove("open", "maximized");
+        break;
+        
+      case "widgetMaximized":
+        widgetContainer.classList.remove("open");
+        widgetContainer.classList.add("maximized");
+        break;
     }
   });
 }
@@ -170,8 +224,3 @@ function loadWhenReady(url) {
 }
 
 loadWhenReady("https://nextjs-bot-ten.vercel.app/widget");
-
-
-
-
-
