@@ -140,8 +140,8 @@ function loadChatWidget(url) {
       widgetContainer.style.height = "auto";
     } else if (event.data === "widgetMaximized") {
      
-      widgetContainer.style.top = "0";
-      widgetContainer.style.left = "0";
+      // widgetContainer.style.top = "0";
+      // widgetContainer.style.left = "0";
       widgetContainer.style.right = "0";
       widgetContainer.style.bottom = "0";
       widgetContainer.style.width = "100%";
@@ -151,8 +151,8 @@ function loadChatWidget(url) {
       iframe.style.height = "100%";
       iframe.style.maxWidth = "100%";
       iframe.style.position = "absolute";
-      iframe.style.top = "0";
-      iframe.style.left = "0";
+      // iframe.style.top = "0";
+      // iframe.style.left = "0";
       iframe.style.right = "0";
       iframe.style.bottom = "0";
       iframe.style.zIndex = "999999";
