@@ -115,10 +115,7 @@
 
 
 
-
-
-
-(function() {
+(function () {
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.position = 'fixed';
@@ -135,13 +132,12 @@
   iframe.className = 'chatbotFrame';
   iframe.setAttribute('frameborder', '0');
   iframe.setAttribute('scrolling', 'yes');
-  
+
   document.body.appendChild(iframe);
 
   function handleMessage(event) {
-    
     if (event.data.type === 'widgetState') {
-      switch(event.data.state) {
+      switch (event.data.state) {
         case 'chatOpen':
           iframe.style.width = '100%';
           iframe.style.height = '100%';
@@ -150,7 +146,7 @@
           iframe.style.width = '600px';
           iframe.style.height = '150px';
           break;
-        default: 
+        default:
           iframe.style.width = '150px';
           iframe.style.height = '150px';
       }
@@ -161,14 +157,9 @@
     if (!iframe.contains(event.target)) {
       iframe.contentWindow.postMessage({
         type: 'closeWidget'
-      }, '*'); 
+      }, '*');
     }
   }
-
-  window.addEventListener('message', handleMessage);
-  document.addEventListener('click', handleClickOutside);
-})();
-  
 
   window.addEventListener('message', handleMessage);
   document.addEventListener('click', handleClickOutside);
