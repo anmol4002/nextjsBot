@@ -1044,6 +1044,7 @@ export default function Chat() {
     
     let state = 'icon-only';
     if (showIcons) state = 'icons-panel';
+    else if (isChatOpen && showQRImage) state = 'chat-open';
     else if (isChatOpen && !isMaximized) state = 'chat-open';
     else if (isChatOpen && isMaximized) state = 'chat-maximized';
     
@@ -1051,7 +1052,7 @@ export default function Chat() {
       type: 'resize',
       state: state
     }, '*');
-  }, [isInIframe, isChatOpen, showIcons, isMaximized]);
+  }, [isInIframe, isChatOpen, showIcons, isMaximized, showQRImage]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1072,8 +1073,11 @@ export default function Chat() {
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
     setIsMaximized(false);
-    setShowQRImage(false);
-    setShowIcons(false);
+    
+    // Don't reset showQRImage when closing chat
+    if (isChatOpen) {
+      setShowQRImage(false);
+    }
 
     if (!isChatOpen) {
       sendInitialMessages();
@@ -1166,6 +1170,7 @@ export default function Chat() {
     setIsChatOpen(true);
     setShowQRImage(true);
     setIsMaximized(false);
+    // Don't hide the icons panel
   };
 
   const handleCloseQR = () => {
@@ -1205,16 +1210,8 @@ export default function Chat() {
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
                   aria-label="Toggle chat icons"
                 >
-                  <div
-                    className={`transition-transform duration-500 ease-out ${
-                      showIcons ? "rotate-180" : "rotate-0"
-                    }`}
-                  >
-                    {showIcons ? (
-                      <ArrowDownCircle size={28} className="w-7 h-7" />
-                    ) : (
-                      <MessageCircle size={28} className="w-7 h-7" />
-                    )}
+                  <div className="transition-transform duration-500 ease-out">
+                    <MessageCircle size={28} className="w-7 h-7" />
                   </div>
                 </Button>
               </TooltipTrigger>
@@ -1306,7 +1303,7 @@ export default function Chat() {
           </div>
         )}
 
-        {isChatOpen && (
+        {(isChatOpen || showQRImage) && (
           <div
             className={`fixed z-50 ${
               isMaximized
