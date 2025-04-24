@@ -168,7 +168,7 @@
   window.addEventListener('message', handleMessage);
   document.addEventListener('click', handleClickOutside);
 })();
-  }
+  
 
   window.addEventListener('message', handleMessage);
   document.addEventListener('click', handleClickOutside);
