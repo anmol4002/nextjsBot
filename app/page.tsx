@@ -972,17 +972,12 @@ export default function Chat() {
   const [showQRImage, setShowQRImage] = useState(false);
   const [language, setLanguage] = useState("auto");
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
-  // Store previous chat state before opening modal
-  const [prevChatState, setPrevChatState] = useState({
-    isChatOpen: false,
-    showIcons: false,
-    isMaximized: false
-  });
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const {
     messages,
@@ -1045,6 +1040,29 @@ export default function Chat() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Don't process click outside if privacy policy modal is open
+      if (isPolicyModalOpen) {
+        // Only process clicks outside the modal itself
+        if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+          setIsPolicyModalOpen(false);
+          // Reset to show message circle
+          setShowIcons(false);
+          setIsChatOpen(false);
+          
+          // Notify parent frame of state change
+          if (isMounted) {
+            window.parent.postMessage(
+              {
+                type: "widgetState",
+                state: "collapsed",
+              },
+              "*"
+            );
+          }
+        }
+        return;
+      }
+
       if (
         !widgetRef.current?.contains(event.target as Node) &&
         !chatIconRef.current?.contains(event.target as Node)
@@ -1058,7 +1076,7 @@ export default function Chat() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showIcons, isChatOpen]);
+  }, [showIcons, isChatOpen, isPolicyModalOpen, isMounted]);
 
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
@@ -1156,35 +1174,18 @@ export default function Chat() {
     setIsChatOpen(false);
   };
 
-  const handleOpenPolicyModal = () => {
-    // Store current chat state before opening modal
-    setPrevChatState({
-      isChatOpen,
-      showIcons,
-      isMaximized
-    });
-    setIsPolicyModalOpen(true);
-  };
-
   const handleClosePolicyModal = () => {
     setIsPolicyModalOpen(false);
-    // Restore previous chat state
-    setIsChatOpen(prevChatState.isChatOpen);
-    setShowIcons(prevChatState.showIcons);
-    setIsMaximized(prevChatState.isMaximized);
     
-    // Notify parent about the state change
+    // Notify parent about the state change - always return to message circle
     if (isMounted) {
-      const state = prevChatState.isChatOpen
-        ? "chatOpen"
-        : prevChatState.showIcons
-        ? "showIcons"
-        : "collapsed";
+      setShowIcons(false);
+      setIsChatOpen(false);
       
       window.parent.postMessage(
         {
           type: "widgetState",
-          state: state,
+          state: "collapsed",
         },
         "*"
       );
@@ -1206,7 +1207,7 @@ export default function Chat() {
       }`}
     >
       <TooltipProvider>
-        {!showIcons && !isChatOpen && (
+        {!showIcons && !isChatOpen && !isPolicyModalOpen && (
           <div
             className={`fixed bottom-4 right-6 z-50 ${
               !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
@@ -1242,7 +1243,7 @@ export default function Chat() {
         )}
 
         <div ref={widgetRef}>
-          {showIcons && (
+          {showIcons && !isPolicyModalOpen && (
             <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
               <div className="flex items-center space-x-1 sm:space-x-2">
                 {[
@@ -1323,7 +1324,7 @@ export default function Chat() {
             </div>
           )}
 
-          {isChatOpen && (
+          {isChatOpen && !isPolicyModalOpen && (
             <div
               className={`fixed z-50 ${
                 isMaximized
@@ -1364,7 +1365,7 @@ export default function Chat() {
                         sendDepartmentMessage={sendDepartmentMessage}
                         TRANSLATIONS={TRANSLATIONS}
                         language={language}
-                        setIsPolicyModalOpen={handleOpenPolicyModal}
+                        setIsPolicyModalOpen={setIsPolicyModalOpen}
                       />
                     </div>
 
@@ -1401,9 +1402,11 @@ export default function Chat() {
             onClose={() => setToast(null)}
           />
         )}
-         <PrivacyPolicyModal
+        
+        <PrivacyPolicyModal
           isOpen={isPolicyModalOpen}
           onClose={handleClosePolicyModal}
+          ref={modalRef}
         />
       </TooltipProvider>
     </div>
