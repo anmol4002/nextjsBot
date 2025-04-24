@@ -126,7 +126,7 @@
         iframe.style.height = '150px';
       } else if (newState === 'icons-panel') {
         iframe.style.width = '500px';
-        iframe.style.height = '60px';
+        iframe.style.height = '150px';
       } else if (newState === 'chat-open' || newState === 'qr-open') {
         iframe.style.width = '500px';
      
