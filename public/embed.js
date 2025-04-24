@@ -123,13 +123,13 @@
     if (event.data.type === 'resize') {
     
       if (event.data.state === 'icon-only') {
-        iframe.style.width = '80px';
-        iframe.style.height = '80px';
+        iframe.style.width = '100px';
+        iframe.style.height = '100px';
       } else if (event.data.state === 'icons-panel') {
-        iframe.style.width = '500px';
+        iframe.style.width = '700px';
         iframe.style.height = '80px';
       } else if (event.data.state === 'chat-open') {
-        iframe.style.width = '500px';
+        iframe.style.width = '700px';
         iframe.style.height = '600px';
       } else if (event.data.state === 'chat-maximized') {
         iframe.style.width = '100%';
