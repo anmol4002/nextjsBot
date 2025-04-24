@@ -130,7 +130,7 @@ function loadChatWidget(url) {
     if (event.data === "widgetOpen") {
       iframe.style.width = "95%";
       iframe.style.maxWidth = "550px";
-      iframe.style.height = "800px";
+      iframe.style.height = "900px";
       widgetContainer.style.width = "auto";
       widgetContainer.style.height = "auto";
     } else if (event.data === "widgetClosed") {
