@@ -130,12 +130,12 @@
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '99999';
+  iframe.style.transition = 'all 0.3s ease';
   iframe.title = 'Punjab Government Chatbot';
   iframe.allowTransparency = 'true';
   iframe.className = 'chatbotFrame';
   iframe.setAttribute('frameborder', '0');
-  iframe.setAttribute('scrolling', 'yes');  
-  iframe.style.overflow = 'auto';
+  iframe.setAttribute('scrolling', 'yes');
   
   document.body.appendChild(iframe);
 
@@ -143,17 +143,31 @@
     if (event.origin !== "https://nextjs-bot-ten.vercel.app") return;
     
     if (event.data.type === 'widgetState') {
-      if (event.data.state === 'expanded') {
+      if (event.data.state === 'chatOpen') {
+       
         iframe.style.width = '100%';
         iframe.style.height = '100%';
-        iframe.style.overflow = 'auto';
+      } else if (event.data.state === 'showIcons') {
+    
+        iframe.style.width = '600px';
+        iframe.style.height = '150px';
       } else {
+    
         iframe.style.width = '150px';
         iframe.style.height = '150px';
-        iframe.style.overflow = 'visible';
       }
     }
   }
 
+ 
+  function handleClickOutside(event) {
+    if (!iframe.contains(event.target)) {
+      iframe.contentWindow.postMessage({
+        type: 'closeWidget'
+      }, 'https://nextjs-bot-ten.vercel.app');
+    }
+  }
+
   window.addEventListener('message', handleMessage);
+  document.addEventListener('click', handleClickOutside);
 })();
