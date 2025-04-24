@@ -927,7 +927,6 @@
 
 
 
-
 "use client";
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
@@ -1053,10 +1052,9 @@ export default function Chat() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isPolicyModalOpen) {
-        return;
-      }
-      
+      // Don't handle clicks if policy modal is open
+      if (isPolicyModalOpen) return;
+
       if (
         !widgetRef.current?.contains(event.target as Node) &&
         !chatIconRef.current?.contains(event.target as Node)
@@ -1168,30 +1166,27 @@ export default function Chat() {
     setIsChatOpen(false);
   };
 
-  const handleClosePolicyModal = () => {
-    setIsPolicyModalOpen(false);
-
-
-    setShowIcons(false);
-    setIsChatOpen(false);
-
-    if (isMounted) {
-      window.parent.postMessage(
-        {
-          type: "widgetState",
-          state: "collapsed",
-        },
-        "*"
-      );
-    }
-  };
-
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
     } as React.FormEvent<HTMLFormElement>;
     handleSubmit(customEvent, department);
     setIsDepartmentLocked(true);
+  };
+
+  const handleOpenPolicyModal = () => {
+    setIsPolicyModalOpen(true);
+    // Keep chat open when opening policy modal
+    setIsChatOpen(true);
+    setShowIcons(false);
+  };
+
+  const handleClosePolicyModal = () => {
+    setIsPolicyModalOpen(false);
+    // Ensure chat remains open after closing modal
+    if (!isChatOpen) {
+      setIsChatOpen(true);
+    }
   };
 
   return (
@@ -1201,7 +1196,7 @@ export default function Chat() {
       }`}
     >
       <TooltipProvider>
-        {!showIcons && !isChatOpen && !isPolicyModalOpen && (
+        {!showIcons && !isChatOpen && (
           <div
             className={`fixed bottom-4 right-6 z-50 ${
               !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
@@ -1237,7 +1232,7 @@ export default function Chat() {
         )}
 
         <div ref={widgetRef}>
-          {showIcons && !isPolicyModalOpen && (
+          {showIcons && (
             <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
               <div className="flex items-center space-x-1 sm:space-x-2">
                 {[
@@ -1318,7 +1313,7 @@ export default function Chat() {
             </div>
           )}
 
-          {isChatOpen && !isPolicyModalOpen && (
+          {isChatOpen && (
             <div
               className={`fixed z-50 ${
                 isMaximized
@@ -1359,7 +1354,7 @@ export default function Chat() {
                         sendDepartmentMessage={sendDepartmentMessage}
                         TRANSLATIONS={TRANSLATIONS}
                         language={language}
-                        setIsPolicyModalOpen={setIsPolicyModalOpen}
+                        setIsPolicyModalOpen={handleOpenPolicyModal}
                       />
                     </div>
 
@@ -1396,7 +1391,6 @@ export default function Chat() {
             onClose={() => setToast(null)}
           />
         )}
-      
         <PrivacyPolicyModal
           isOpen={isPolicyModalOpen}
           onClose={handleClosePolicyModal}
