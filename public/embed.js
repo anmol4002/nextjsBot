@@ -118,14 +118,13 @@
 
 
 
-
 (function() {
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.position = 'fixed';
   iframe.style.bottom = '0';
   iframe.style.right = '0';
-  iframe.style.width = '150px'; 
+  iframe.style.width = '150px';
   iframe.style.height = '150px';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
@@ -140,32 +139,35 @@
   document.body.appendChild(iframe);
 
   function handleMessage(event) {
-    if (event.origin !== "https://nextjs-bot-ten.vercel.app") return;
     
     if (event.data.type === 'widgetState') {
-      if (event.data.state === 'chatOpen') {
-       
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-      } else if (event.data.state === 'showIcons') {
-    
-        iframe.style.width = '600px';
-        iframe.style.height = '150px';
-      } else {
-    
-        iframe.style.width = '150px';
-        iframe.style.height = '150px';
+      switch(event.data.state) {
+        case 'chatOpen':
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          break;
+        case 'showIcons':
+          iframe.style.width = '600px';
+          iframe.style.height = '150px';
+          break;
+        default: 
+          iframe.style.width = '150px';
+          iframe.style.height = '150px';
       }
     }
   }
 
- 
   function handleClickOutside(event) {
     if (!iframe.contains(event.target)) {
       iframe.contentWindow.postMessage({
         type: 'closeWidget'
-      }, 'https://nextjs-bot-ten.vercel.app');
+      }, '*'); 
     }
+  }
+
+  window.addEventListener('message', handleMessage);
+  document.addEventListener('click', handleClickOutside);
+})();
   }
 
   window.addEventListener('message', handleMessage);
