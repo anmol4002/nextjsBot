@@ -94,9 +94,7 @@
 
 
 
-
 (function() {
-
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.position = 'fixed';
@@ -111,11 +109,8 @@
   iframe.title = 'Punjab Government Chatbot';
   iframe.id = 'punjab-chatbot-frame';
   
-
   document.body.appendChild(iframe);
-
   window.addEventListener('message', function(event) {
-
     if (event.source !== iframe.contentWindow) return;
     
     if (event.data.type === 'resize') {
@@ -126,11 +121,14 @@
         iframe.style.width = '500px';
         iframe.style.height = '80px';
       } else if (event.data.state === 'chat-open') {
+        // Increased height to accommodate both chat and icons panel
         iframe.style.width = '380px';
-        iframe.style.height = '600px';
+        iframe.style.height = '680px';
       } else if (event.data.state === 'chat-maximized') {
         iframe.style.width = '100%';
         iframe.style.height = '100%';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
       }
     }
   });
