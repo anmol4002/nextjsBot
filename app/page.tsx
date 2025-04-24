@@ -1045,36 +1045,25 @@ export default function Chat() {
     }
   }, []);
 
-   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data === "openChat") {
-        setIsChatOpen(true);
-        setIsMinimized(false);
-      } else if (event.data === "closeChat") {
-        setIsChatOpen(false);
-      } else if (event.data === "toggleChat") {
-        setIsChatOpen(prev => !prev);
-        setIsMinimized(false);
-      } else if (event.data === "minimizeChat") {
-        setIsMinimized(true);
-      } else if (event.data === "maximizeChat") {
-        setIsMinimized(false);
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-
-    try {
-      setIsInIframe(window.self !== window.top);
-    } catch (e) {
-      setIsInIframe(true);
-      console.error("Error checking iframe status:", e);
+useEffect(() => {
+  const handleMessage = (event: MessageEvent) => {
+    if (event.data === 'openChat') {
+      setIsChatOpen(true);
+      setIsMinimized(false);
+    } else if (event.data === 'closeChat') {
+      setIsChatOpen(false);
+    } else if (event.data === 'toggleChat') {
+      setIsChatOpen(prev => !prev);
+      setIsMinimized(false);
     }
+  };
 
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
-  }, []);
+  window.addEventListener('message', handleMessage);
+
+  return () => {
+    window.removeEventListener('message', handleMessage);
+  };
+}, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1180,7 +1169,20 @@ const toggleChat = () => {
       scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
-
+const handleClose = () => {
+  if (isInIframe) {
+    window.parent.postMessage('minimizeChat', '*');
+  } else {
+    setIsChatOpen(false);
+  }
+};
+const handleMinimize = () => {
+  if (isInIframe) {
+    window.parent.postMessage('minimizeChat', '*');
+  } else {
+    setIsMinimized(true);
+  }
+};
   const handleWhatsAppClick = () =>
     window.open("https://wa.me/919855501076", "_blank");
 
