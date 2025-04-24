@@ -1357,6 +1357,7 @@ export default function Chat() {
                   />
 
                   <CardContent
+                   classname = {`pt-2`}
                     messages={messages}
                     chatContainerRef={customChatContainerRef}
                     isMaximized={isMaximized}
