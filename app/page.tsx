@@ -904,17 +904,9 @@ export default function Chat() {
             onClose={() => setToast(null)}
           />
         )}
-        <PrivacyPolicyModal
+         <PrivacyPolicyModal
           isOpen={isPolicyModalOpen}
-          onClose={() => {
-            setIsPolicyModalOpen(false);
-
-            setIsChatOpen(true);
-
-            if (!isMaximized) {
-              setShowIcons(true);
-            }
-          }}
+          onClose={() => setIsPolicyModalOpen(false)}
         />
       </TooltipProvider>
     </div>
