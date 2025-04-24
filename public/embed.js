@@ -100,55 +100,44 @@
 
 
 (function() {
-
+  // Create iframe for the widget
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.position = 'fixed';
   iframe.style.bottom = '0';
   iframe.style.right = '0';
-  iframe.style.width = '150px'; 
-  iframe.style.height = '150px'; 
+  iframe.style.width = '80px';  // Initial small size for just the icon
+  iframe.style.height = '80px';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
-  iframe.style.zIndex = '99999';
-
-  iframe.style.cursor = 'pointer';
-
+  iframe.style.zIndex = '9999';
   iframe.style.transition = 'all 0.3s ease';
   iframe.title = 'Punjab Government Chatbot';
+  iframe.id = 'punjab-chatbot-frame';
   
-
+  // Append the iframe to the body
   document.body.appendChild(iframe);
-  
 
-  var isExpanded = false;
-  iframe.addEventListener('click', function(e) {
-    
-    if (!isExpanded) {
-      isExpanded = true;
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.bottom = '0';
-      iframe.style.right = '0';
-      iframe.style.borderRadius = '0';
-      iframe.style.cursor = 'default';
-    }
-  });
-  
-
+  // Handle messages from the iframe
   window.addEventListener('message', function(event) {
-    if (event.data === 'minimizeChat') {
-      isExpanded = false;
-      iframe.style.width = '150px';
-      iframe.style.height = '150px';
-      iframe.style.bottom = '20px';
-      iframe.style.right = '20px';
-      iframe.style.borderRadius = '50%';
-      iframe.style.cursor = 'pointer';
+    // Only process messages from our iframe
+    if (event.source !== iframe.contentWindow) return;
+    
+    if (event.data.type === 'resize') {
+      // Update iframe dimensions based on widget state
+      if (event.data.state === 'icon-only') {
+        iframe.style.width = '80px';
+        iframe.style.height = '80px';
+      } else if (event.data.state === 'icons-panel') {
+        iframe.style.width = '500px';
+        iframe.style.height = '80px';
+      } else if (event.data.state === 'chat-open') {
+        iframe.style.width = '380px';
+        iframe.style.height = '600px';
+      } else if (event.data.state === 'chat-maximized') {
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+      }
     }
   });
-
-  setTimeout(() => {
-    iframe.style.setProperty('bottom', '20px', 'important');
-  }, 100);
 })();
