@@ -975,7 +975,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
 
-import { X, MessageCircle, Loader2, ArrowDownCircle } from "lucide-react";
+import { X, MessageCircle, Loader2 } from "lucide-react";
 
 import { useCustomChat } from "@/hooks/useCustomChat";
 import { translations, departmentTranslations } from "@/lib/mapping";
@@ -1059,7 +1059,8 @@ export default function Chat() {
     
     window.parent.postMessage({
       type: 'resize',
-      state: state
+      state: state,
+      showIcons: showIcons
     }, '*');
   }, [isInIframe, isChatOpen, showIcons, isMaximized, showQRImage]);
 
@@ -1238,7 +1239,7 @@ export default function Chat() {
 
         {/* Icons Panel - Always visible when showIcons is true, regardless of chat/QR state */}
         {showIcons && (
-          <div className="fixed bottom-2 z-40 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
+          <div className="fixed bottom-0 z-40 right-0 w-[500px] mx-auto flex items-center justify-between bg-white rounded-t-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
               {[
                 {
@@ -1318,20 +1319,22 @@ export default function Chat() {
           </div>
         )}
 
-        {/* Chat/QR Content - Now appears above icons instead of replacing them */}
+        {/* Chat/QR Content - Now appears directly above icons with no gap */}
         {isChatOpen && (
           <div
             className={`fixed z-50 ${
               isMaximized
                 ? "inset-0 bottom-0 p-0 animate-fadeIn"
-                : "bottom-20 right-4 w-[95%] max-w-[380px] animate-scaleIn"
+                : showIcons 
+                  ? "bottom-[60px] right-0 w-[500px] animate-scaleIn" 
+                  : "bottom-20 right-4 w-[500px] animate-scaleIn"
             }`}
             style={{
               width: isMaximized ? "100%" : undefined,
-              height: isMaximized ? "100vh" : undefined,
-              borderRadius: isMaximized ? "0" : "12px",
-              // Added bottom margin to avoid overlapping with icons panel
-              marginBottom: showIcons && !isMaximized ? "60px" : "0",
+              height: isMaximized ? "100vh" : showIcons ? "600px" : "600px",
+              borderRadius: isMaximized ? "0" : showIcons ? "12px 12px 0 0" : "12px",
+              // No bottom margin when icons are showing for seamless connection
+              marginBottom: 0,
             }}
           >
             <Card className="border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out h-full">
