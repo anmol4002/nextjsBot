@@ -96,13 +96,13 @@
 
 
 (function() {
-  // Create iframe for the widget
+
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
   iframe.style.position = 'fixed';
   iframe.style.bottom = '0';
   iframe.style.right = '0';
-  iframe.style.width = '80px';  // Initial small size for just the icon
+  iframe.style.width = '80px'; 
   iframe.style.height = '80px';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
@@ -111,16 +111,14 @@
   iframe.title = 'Punjab Government Chatbot';
   iframe.id = 'punjab-chatbot-frame';
   
-  // Append the iframe to the body
+
   document.body.appendChild(iframe);
 
-  // Handle messages from the iframe
   window.addEventListener('message', function(event) {
-    // Only process messages from our iframe
+
     if (event.source !== iframe.contentWindow) return;
     
     if (event.data.type === 'resize') {
-      // Update iframe dimensions based on widget state
       if (event.data.state === 'icon-only') {
         iframe.style.width = '80px';
         iframe.style.height = '80px';
