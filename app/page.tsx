@@ -1062,34 +1062,6 @@ export default function Chat() {
   }, [isChatOpen, showIcons, isMaximized, isInIframe]);
 
 
- // Add these handlers to your component to listen for parent messages
-useEffect(() => {
-  if (isInIframe) {
-    const handleParentMessage = (event: MessageEvent) => {
-      if (event.data === "openChatFromParent") {
-        setShowIcons(true);
-        setIsChatOpen(true);
-      } else if (event.data === "closeChatFromParent") {
-        setShowIcons(false);
-        setIsChatOpen(false);
-      } else if (event.data === "toggleChatFromParent") {
-        if (isChatOpen) {
-          setIsChatOpen(false);
-          setShowIcons(false);
-        } else {
-          setShowIcons(true);
-          setIsChatOpen(true);
-        }
-      }
-    };
-
-    window.addEventListener("message", handleParentMessage);
-    return () => {
-      window.removeEventListener("message", handleParentMessage);
-    };
-  }
-}, [isInIframe, isChatOpen]);
-
   // Close language dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
