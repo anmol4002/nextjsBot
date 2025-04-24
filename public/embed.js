@@ -97,8 +97,6 @@
 
 
 
-
-
 (function() {
   // Create iframe for the widget
   var iframe = document.createElement('iframe');
@@ -118,26 +116,52 @@
   // Append the iframe to the body
   document.body.appendChild(iframe);
 
+  // Debug counter to track postMessage events
+  var messageCount = 0;
+  
   // Handle messages from the iframe
   window.addEventListener('message', function(event) {
-    // Only process messages from our iframe
-    if (event.source !== iframe.contentWindow) return;
+    messageCount++;
+    console.log("Message received #" + messageCount + ":", event.data);
+    
+    // Check if message is from our iframe
+    if (event.source !== iframe.contentWindow) {
+      console.log("Message ignored - not from our iframe");
+      return;
+    }
     
     if (event.data.type === 'resize') {
+      console.log("Resizing iframe to state:", event.data.state);
+      
       // Update iframe dimensions based on widget state
-      if (event.data.state === 'icon-only') {
-        iframe.style.width = '80px';
-        iframe.style.height = '80px';
-      } else if (event.data.state === 'icons-panel') {
-        iframe.style.width = '500px';
-        iframe.style.height = '80px';
-      } else if (event.data.state === 'chat-open') {
-        iframe.style.width = '380px';
-        iframe.style.height = '600px';
-      } else if (event.data.state === 'chat-maximized') {
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
+      switch(event.data.state) {
+        case 'icon-only':
+          iframe.style.width = '80px';
+          iframe.style.height = '80px';
+          break;
+        case 'icons-panel':
+          iframe.style.width = '500px';
+          iframe.style.height = '80px';
+          break;
+        case 'chat-open':
+          iframe.style.width = '380px';
+          iframe.style.height = '600px';
+          break;
+        case 'chat-maximized':
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          break;
+        default:
+          console.warn("Unknown state:", event.data.state);
       }
+      
+      console.log("Iframe dimensions updated:", {
+        width: iframe.style.width,
+        height: iframe.style.height
+      });
     }
   });
+  
+  // Log that the widget has been initialized
+  console.log("Punjab Government Chatbot widget initialized");
 })();
