@@ -96,7 +96,6 @@
 
 
 
-
 (function() {
   // Create iframe for the widget
   var iframe = document.createElement('iframe');
@@ -104,8 +103,8 @@
   iframe.style.position = 'fixed';
   iframe.style.bottom = '0';
   iframe.style.right = '0';
-  iframe.style.width = '80px';
-  iframe.style.height = '80px';
+  iframe.style.width = '150px';  
+  iframe.style.height = '150px';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '9999';
@@ -113,38 +112,29 @@
   iframe.title = 'Punjab Government Chatbot';
   iframe.id = 'punjab-chatbot-frame';
   
+
   document.body.appendChild(iframe);
 
-  // Handle messages from the iframe
+ 
   window.addEventListener('message', function(event) {
-    // Check if message is from our iframe
-    try {
-      if (event.source !== iframe.contentWindow) return;
-      
-      if (event.data.type === 'resize') {
-        console.log("Resizing iframe to:", event.data.width, event.data.height);
-        
-        // Update iframe dimensions
-        iframe.style.width = event.data.width + 'px';
-        iframe.style.height = event.data.height + 'px';
-        
-        // Adjust position for maximized state
-        if (event.data.state === 'chat-maximized') {
-          iframe.style.bottom = '0';
-          iframe.style.right = '0';
-          iframe.style.left = '0';
-          iframe.style.top = '0';
-        } else {
-          iframe.style.bottom = '20px';
-          iframe.style.right = '20px';
-          iframe.style.left = 'auto';
-          iframe.style.top = 'auto';
-        }
+    
+    if (event.source !== iframe.contentWindow) return;
+    
+    if (event.data.type === 'resize') {
+    
+      if (event.data.state === 'icon-only') {
+        iframe.style.width = '80px';
+        iframe.style.height = '80px';
+      } else if (event.data.state === 'icons-panel') {
+        iframe.style.width = '500px';
+        iframe.style.height = '80px';
+      } else if (event.data.state === 'chat-open') {
+        iframe.style.width = '500px';
+        iframe.style.height = '600px';
+      } else if (event.data.state === 'chat-maximized') {
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
       }
-    } catch (err) {
-      console.error("Error handling message:", err);
     }
   });
-  
-  console.log("Punjab Government Chatbot widget initialized");
 })();
