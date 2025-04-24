@@ -6,6 +6,7 @@ export default function UnauthorizedPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white p-8 rounded-lg shadow-sm max-w-md w-full text-center border border-gray-100">
+        <h1 className="text-xl font-semibold text-gray-800 mb-3">Access Restricted</h1>
         <div className="flex justify-center mb-6">
           <Image
             src="/images/access-denied.png"
@@ -16,7 +17,7 @@ export default function UnauthorizedPage() {
           />
         </div>
 
-        <h1 className="text-xl font-semibold text-gray-800 mb-3">Access Restricted</h1>
+        
         
         <div className="bg-gray-50 p-4 rounded-md mb-6 border border-gray-100">
           <p className="text-gray-600 text-sm">
