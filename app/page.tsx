@@ -1218,7 +1218,7 @@ export default function Chat() {
       }`}
     >
       <TooltipProvider>
-        {!showIcons && (
+        {!showIcons &&  !isMaximized (
           <div className={`fixed bottom-4 right-6 z-50 animate-fadeInUp`}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -1239,7 +1239,7 @@ export default function Chat() {
           </div>
         )}
 
-        {showIcons && (
+        {showIcons &&   !isMaximized && (
           <div className="fixed bottom-2 z-50 right-0 w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
               {[
