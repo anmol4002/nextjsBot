@@ -958,9 +958,7 @@ import dynamic from "next/dynamic";
 const CardHeader = dynamic(() => import("@/components/Card/CardHeader"));
 const CardContent = dynamic(() => import("@/components/Card/CardContent"));
 const CardFooter = dynamic(() => import("@/components/Card/CardFooter"));
-const PrivacyPolicyModal = dynamic(
-  () => import("@/components/PrivacyPolicyModal")
-);
+const PrivacyPolicyModal = dynamic(() => import("@/components/PrivacyPolicyModal"));
 const QRCard = dynamic(() => import("@/components/Card/QRCard"));
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
@@ -1005,11 +1003,8 @@ export default function Chat() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [isDepartmentLocked, setIsDepartmentLocked] = useState(false);
-
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  
   const [isInIframe, setIsInIframe] = useState(false);
 
   const chatIconRef = useRef<HTMLButtonElement>(null);
@@ -1034,36 +1029,29 @@ export default function Chat() {
   const departmentInfo = getDepartmentInfo(language, currentDepartment);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
- 
- 
- useEffect(() => {
+  // Check if running in iframe
+  useEffect(() => {
     try {
       setIsInIframe(window.self !== window.top);
     } catch (e) {
       setIsInIframe(true);
-      console.error("Error checking iframe status:", e);
     }
   }, []);
 
-useEffect(() => {
-  const handleMessage = (event: MessageEvent) => {
-    if (event.data === 'openChat') {
-      setIsChatOpen(true);
-      setIsMinimized(false);
-    } else if (event.data === 'closeChat') {
-      setIsChatOpen(false);
-    } else if (event.data === 'toggleChat') {
-      setIsChatOpen(prev => !prev);
-      setIsMinimized(false);
-    }
-  };
-
-  window.addEventListener('message', handleMessage);
-
-  return () => {
-    window.removeEventListener('message', handleMessage);
-  };
-}, []);
+  // Notify parent window about size changes when in iframe
+  useEffect(() => {
+    if (!isInIframe) return;
+    
+    let state = 'icon-only';
+    if (showIcons) state = 'icons-panel';
+    else if (isChatOpen && !isMaximized) state = 'chat-open';
+    else if (isChatOpen && isMaximized) state = 'chat-maximized';
+    
+    window.parent.postMessage({
+      type: 'resize',
+      state: state
+    }, '*');
+  }, [isInIframe, isChatOpen, showIcons, isMaximized]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1080,17 +1068,15 @@ useEffect(() => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-const toggleChat = () => {
-    if (isInIframe) {
-      window.parent.postMessage(isChatOpen ? "closeChat" : "openChat", "*");
-    } else {
-      setIsChatOpen((prev) => !prev);
-      setIsMaximized(false);
-      setShowQRImage(false);
 
-      if (!isChatOpen) {
-        sendInitialMessages();
-      }
+  const toggleChat = () => {
+    setIsChatOpen((prev) => !prev);
+    setIsMaximized(false);
+    setShowQRImage(false);
+    setShowIcons(false);
+
+    if (!isChatOpen) {
+      sendInitialMessages();
     }
   };
 
@@ -1159,6 +1145,7 @@ const toggleChat = () => {
   };
 
   const toggleIcons = () => setShowIcons((prev) => !prev);
+  
   const handleMaximize = () => setIsMaximized(true);
   const handleRestore = () => setIsMaximized(false);
 
@@ -1169,20 +1156,7 @@ const toggleChat = () => {
       scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
-const handleClose = () => {
-  if (isInIframe) {
-    window.parent.postMessage('minimizeChat', '*');
-  } else {
-    setIsChatOpen(false);
-  }
-};
-const handleMinimize = () => {
-  if (isInIframe) {
-    window.parent.postMessage('minimizeChat', '*');
-  } else {
-    setIsMinimized(true);
-  }
-};
+
   const handleWhatsAppClick = () =>
     window.open("https://wa.me/919855501076", "_blank");
 
@@ -1198,6 +1172,7 @@ const handleMinimize = () => {
     setShowQRImage(false);
     setIsChatOpen(false);
   };
+  
   const sendDepartmentMessage = (department: string) => {
     const customEvent = {
       preventDefault: () => {},
@@ -1213,14 +1188,13 @@ const handleMinimize = () => {
     ] || translations.en;
 
   return (
-
-    <div className={`${isInIframe ? 'pt-0 bg-transparent' : 'flex flex-col min-h-screen'}`}>
-
+    <div className={`${isInIframe ? 'bg-transparent' : 'flex flex-col min-h-screen'}`}>
       <TooltipProvider>
-        {!isInIframe && !showIcons && (
-          <div className={`fixed bottom-4 right-6 z-50 ${
-            !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
-          }`}
+        {!showIcons && !isChatOpen && (
+          <div
+            className={`fixed bottom-4 right-6 z-50 ${
+              !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
+            }`}
           >
             <Tooltip>
               <TooltipTrigger asChild>
@@ -1251,7 +1225,7 @@ const handleMinimize = () => {
           </div>
         )}
 
-     {!isInIframe && showIcons && (
+        {showIcons && (
           <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
               {[
@@ -1334,27 +1308,18 @@ const handleMinimize = () => {
 
         {isChatOpen && (
           <div
-            className={`${isInIframe ? 'fixed z-[99999]' : 'fixed z-50'} ${
-              isMaximized || (isInIframe && !isMinimized)
+            className={`fixed z-50 ${
+              isMaximized
                 ? "inset-0 bottom-0 p-0 animate-fadeIn"
-                : isInIframe && isMinimized
-                ? "bottom-4 right-4 w-[150px] h-[150px] animate-scaleIn"
-                : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
+                : "bottom-20 right-4 w-[95%] max-w-[380px] animate-scaleIn"
             }`}
             style={{
-              width: isMaximized || (isInIframe && !isMinimized) ? "100%" : 
-                     isInIframe && isMinimized ? "150px" : "95%",
-              height: isMaximized || (isInIframe && !isMinimized) ? "100vh" : 
-                      isInIframe && isMinimized ? "150px" : "auto",
-              borderRadius: isMaximized || (isInIframe && !isMinimized) ? "0" : "12px",
-              right: isInIframe && isMinimized ? "20px" : "16px",
-              bottom: isInIframe && isMinimized ? "20px" : "80px",
+              width: isMaximized ? "100%" : undefined,
+              height: isMaximized ? "100vh" : undefined,
+              borderRadius: isMaximized ? "0" : "12px",
             }}
           >
-            <Card
-              className={`border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out
-         `}
-            >
+            <Card className="border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out h-full">
               {showQRImage ? (
                 <QRCard onClose={handleCloseQR} />
               ) : (
@@ -1426,4 +1391,3 @@ const handleMinimize = () => {
     </div>
   );
 }
-
