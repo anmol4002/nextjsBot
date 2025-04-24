@@ -58,8 +58,8 @@ export default function CardContent({
     <ScrollArea
       ref={chatContainerRef}
       className={`${
-        isMaximized ? "h-[calc(100vh-180px)]" : "h-[340px]"
-      } pl-4 overflow-y-auto w-full chat-container`}
+        isMaximized ? "h-[calc(100vh-170px)]" : "h-[330px]"
+      } pl-4 overflow-y-auto w-full chat-container pt-2`}
       style={{
         scrollbarGutter: "stable",
         scrollBehavior: "smooth",
