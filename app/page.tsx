@@ -1178,7 +1178,7 @@ export default function Chat() {
     setIsPolicyModalOpen(true);
     // Keep chat open when opening policy modal
     setIsChatOpen(true);
-    setShowIcons(false);
+    setShowIcons(true);
   };
 
   const handleClosePolicyModal = () => {
