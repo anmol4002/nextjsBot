@@ -92,6 +92,9 @@
 
 // 🌸🌸🌸🌸🌸
 
+
+
+
 (function() {
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
@@ -109,7 +112,6 @@
   
   document.body.appendChild(iframe);
   
- 
   var currentState = 'icon-only';
   
   window.addEventListener('message', function(event) {
@@ -117,16 +119,18 @@
     
     if (event.data.type === 'resize') {
       var newState = event.data.state;
+      var showIcons = event.data.showIcons;
       
       if (newState === 'icon-only') {
         iframe.style.width = '150px';
         iframe.style.height = '150px';
       } else if (newState === 'icons-panel') {
         iframe.style.width = '500px';
-        iframe.style.height = '80px';
+        iframe.style.height = '60px';
       } else if (newState === 'chat-open' || newState === 'qr-open') {
         iframe.style.width = '500px';
-        iframe.style.height = showIconsPanel(newState, currentState) ? '700px' : '600px';
+     
+        iframe.style.height = showIcons ? '660px' : '600px';
       } else if (newState === 'chat-maximized') {
         iframe.style.width = '100%';
         iframe.style.height = '100%';
@@ -137,9 +141,4 @@
       currentState = newState;
     }
   });
-  
-  function showIconsPanel(newState, currentState) {
-    return (newState === 'chat-open' || newState === 'qr-open') && 
-           (currentState === 'icons-panel' || currentState.includes('open'));
-  }
 })();
