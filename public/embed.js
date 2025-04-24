@@ -98,6 +98,8 @@
 
 
 (function() {
+  console.log("Initializing Punjab Government Chatbot widget...");
+  
   // Create iframe for the widget
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
@@ -110,6 +112,7 @@
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '9999';
   iframe.style.transition = 'all 0.3s ease';
+  iframe.style.overflow = 'hidden'; // Prevent scrollbars
   iframe.title = 'Punjab Government Chatbot';
   iframe.id = 'punjab-chatbot-frame';
   
@@ -119,49 +122,106 @@
   // Debug counter to track postMessage events
   var messageCount = 0;
   
-  // Handle messages from the iframe
-  window.addEventListener('message', function(event) {
-    messageCount++;
-    console.log("Message received #" + messageCount + ":", event.data);
-    
-    // Check if message is from our iframe
-    if (event.source !== iframe.contentWindow) {
-      console.log("Message ignored - not from our iframe");
+  // Track the current state to avoid redundant resizes
+  var currentState = null;
+  
+  // Helper function to actually resize the iframe
+  function resizeIframe(state) {
+    if (state === currentState) {
+      console.log("No resize needed - already in state:", state);
       return;
     }
     
-    if (event.data.type === 'resize') {
-      console.log("Resizing iframe to state:", event.data.state);
-      
-      // Update iframe dimensions based on widget state
-      switch(event.data.state) {
-        case 'icon-only':
-          iframe.style.width = '80px';
-          iframe.style.height = '80px';
-          break;
-        case 'icons-panel':
-          iframe.style.width = '500px';
-          iframe.style.height = '80px';
-          break;
-        case 'chat-open':
-          iframe.style.width = '380px';
-          iframe.style.height = '600px';
-          break;
-        case 'chat-maximized':
-          iframe.style.width = '100%';
-          iframe.style.height = '100%';
-          break;
-        default:
-          console.warn("Unknown state:", event.data.state);
+    currentState = state;
+    
+    console.log("Resizing iframe to state:", state);
+    
+    // Clear any existing transition to prevent issues
+    iframe.style.transition = 'none';
+    
+    // Force a reflow
+    void iframe.offsetWidth;
+    
+    // Set dimensions based on widget state
+    switch(state) {
+      case 'icon-only':
+        iframe.style.width = '80px';
+        iframe.style.height = '80px';
+        break;
+      case 'icons-panel':
+        iframe.style.width = '500px';
+        iframe.style.height = '80px';
+        break;
+      case 'chat-open':
+        iframe.style.width = '380px';
+        iframe.style.height = '600px';
+        break;
+      case 'chat-maximized':
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        break;
+      default:
+        console.warn("Unknown state:", state);
+        return;
+    }
+    
+    // Restore transition after a brief delay
+    setTimeout(function() {
+      iframe.style.transition = 'all 0.3s ease';
+    }, 50);
+    
+    console.log("Iframe dimensions updated to:", {
+      width: iframe.style.width,
+      height: iframe.style.height,
+      state: state
+    });
+  }
+  
+  // Handle messages from the iframe
+  window.addEventListener('message', function(event) {
+    messageCount++;
+    
+    try {
+      // Validate message source and format
+      if (!event.data || typeof event.data !== 'object') {
+        return;
       }
       
-      console.log("Iframe dimensions updated:", {
-        width: iframe.style.width,
-        height: iframe.style.height
-      });
+      console.log("Message received #" + messageCount + ":", event.data);
+      
+      // Check if message is from our iframe
+      if (event.source !== iframe.contentWindow) {
+        console.log("Message ignored - not from our iframe");
+        return;
+      }
+      
+      if (event.data.type === 'resize') {
+        // Add a slight delay to ensure DOM has time to update
+        setTimeout(function() {
+          resizeIframe(event.data.state);
+        }, 50);
+      }
+    } catch (err) {
+      console.error("Error handling iframe message:", err);
     }
   });
   
+  // Force initial size after loading
+  iframe.onload = function() {
+    console.log("Iframe loaded, setting initial size");
+    // Reset to initial state
+    resizeIframe('icon-only');
+    
+    // Send a message to the iframe to ensure it knows it's in an iframe
+    try {
+      iframe.contentWindow.postMessage({
+        type: 'iframe-ready'
+      }, '*');
+    } catch (err) {
+      console.error("Error sending ready message to iframe:", err);
+    }
+  };
+  
   // Log that the widget has been initialized
-  console.log("Punjab Government Chatbot widget initialized");
+  console.log("Punjab Government Chatbot widget initialization complete");
 })();
