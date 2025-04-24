@@ -1045,15 +1045,23 @@ export default function Chat() {
     if (!isInIframe) return;
     
     let state = 'icon-only';
-    if (showIcons) state = 'icons-panel';
-    else if (isChatOpen && !isMaximized) state = 'chat-open';
-    else if (isChatOpen && isMaximized) state = 'chat-maximized';
+    if (!showIcons && !isChatOpen && !showQRImage) {
+      state = 'icon-only';
+    } else if (showIcons && !isChatOpen && !showQRImage) {
+      state = 'icons-panel';
+    } else if (isChatOpen && !isMaximized) {
+      state = 'chat-open';
+    } else if (isChatOpen && isMaximized) {
+      state = 'chat-maximized';
+    } else if (showQRImage) {
+      state = 'qr-open';
+    }
     
     window.parent.postMessage({
       type: 'resize',
       state: state
     }, '*');
-  }, [isInIframe, isChatOpen, showIcons, isMaximized]);
+  }, [isInIframe, isChatOpen, showIcons, isMaximized, showQRImage]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1075,12 +1083,13 @@ export default function Chat() {
     if (!isChatOpen) {
       setIsChatOpen(true);
       sendInitialMessages();
+      // QR should be closed when chat is opened
+      setShowQRImage(false);
     } else {
       setIsChatOpen(false);
       setIsMaximized(false);
     }
-    // No longer hide icons when opening chat
-    setShowQRImage(false);
+    // Keep icons visible regardless of chat state
   };
 
   const handleLanguageChange = async (selectedLanguage: string) => {
@@ -1149,6 +1158,12 @@ export default function Chat() {
 
   const toggleIcons = () => {
     setShowIcons((prev) => !prev);
+    // If toggling off icons, ensure chat and QR are also closed
+    if (showIcons) {
+      setIsChatOpen(false);
+      setShowQRImage(false);
+      setIsMaximized(false);
+    }
   };
   
   const handleMaximize = () => setIsMaximized(true);
@@ -1168,15 +1183,16 @@ export default function Chat() {
   const handlePhoneClick = () => window.open("tel:919855501076", "_blank");
 
   const handleQRClick = () => {
-    setIsChatOpen(true);
     setShowQRImage(true);
+    setIsChatOpen(true); // We keep isChatOpen true for consistent UI state management
     setIsMaximized(false);
-    // No longer hide icons when opening QR
+    // Keep icons visible
   };
 
   const handleCloseQR = () => {
     setShowQRImage(false);
     setIsChatOpen(false);
+    // Keep icons visible
   };
   
   const sendDepartmentMessage = (department: string) => {
