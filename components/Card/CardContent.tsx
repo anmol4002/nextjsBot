@@ -59,7 +59,7 @@ export default function CardContent({
       ref={chatContainerRef}
       className={`${
         isMaximized ? "h-[calc(100vh-170px)]" : "h-[330px]"
-      } pl-2 pt-2 overflow-y-auto w-full chat-container`}
+      } pl-4 overflow-y-auto w-full chat-container`}
       style={{
         scrollbarGutter: "stable",
         scrollBehavior: "smooth",
@@ -295,11 +295,6 @@ export default function CardContent({
     </ScrollArea>
   );
 }
-
-
-
-
-
 
 
 
