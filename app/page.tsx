@@ -1072,14 +1072,15 @@ export default function Chat() {
   }, []);
 
   const toggleChat = () => {
-    setIsChatOpen((prev) => !prev);
-    setIsMaximized(false);
-    setShowQRImage(false);
-    setShowIcons(false);
-
     if (!isChatOpen) {
+      setIsChatOpen(true);
       sendInitialMessages();
+    } else {
+      setIsChatOpen(false);
+      setIsMaximized(false);
     }
+    // No longer hide icons when opening chat
+    setShowQRImage(false);
   };
 
   const handleLanguageChange = async (selectedLanguage: string) => {
@@ -1146,7 +1147,9 @@ export default function Chat() {
     }
   };
 
-  const toggleIcons = () => setShowIcons((prev) => !prev);
+  const toggleIcons = () => {
+    setShowIcons((prev) => !prev);
+  };
   
   const handleMaximize = () => setIsMaximized(true);
   const handleRestore = () => setIsMaximized(false);
@@ -1168,6 +1171,7 @@ export default function Chat() {
     setIsChatOpen(true);
     setShowQRImage(true);
     setIsMaximized(false);
+    // No longer hide icons when opening QR
   };
 
   const handleCloseQR = () => {
@@ -1192,11 +1196,10 @@ export default function Chat() {
   return (
     <div className={`${isInIframe ? 'bg-transparent' : 'flex flex-col min-h-screen'}`}>
       <TooltipProvider>
-        {!showIcons && !isChatOpen && (
+        {/* Main Chat Icon - Only show when icons are hidden */}
+        {!showIcons && (
           <div
-            className={`fixed bottom-4 right-6 z-50 ${
-              !showIcons ? "animate-fadeInUp" : "animate-fadeOutDown"
-            }`}
+            className={`fixed bottom-4 right-6 z-50 animate-fadeInUp`}
           >
             <Tooltip>
               <TooltipTrigger asChild>
@@ -1207,17 +1210,7 @@ export default function Chat() {
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
                   aria-label="Toggle chat icons"
                 >
-                  <div
-                    className={`transition-transform duration-500 ease-out ${
-                      showIcons ? "rotate-180" : "rotate-0"
-                    }`}
-                  >
-                    {showIcons ? (
-                      <ArrowDownCircle size={28} className="w-7 h-7" />
-                    ) : (
-                      <MessageCircle size={28} className="w-7 h-7" />
-                    )}
-                  </div>
+                  <MessageCircle size={28} className="w-7 h-7" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top" className="bg-gray-800 text-white">
@@ -1227,8 +1220,9 @@ export default function Chat() {
           </div>
         )}
 
+        {/* Icons Panel - Always visible when showIcons is true, regardless of chat/QR state */}
         {showIcons && (
-          <div className="fixed bottom-2 z-50 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
+          <div className="fixed bottom-2 z-40 right-4 w-[95%] max-w-[500px] mx-auto flex items-center justify-between bg-white rounded-[28px] shadow-lg p-2 animate-slideInRight">
             <div className="flex items-center space-x-1 sm:space-x-2">
               {[
                 {
@@ -1308,6 +1302,7 @@ export default function Chat() {
           </div>
         )}
 
+        {/* Chat/QR Content - Now appears above icons instead of replacing them */}
         {isChatOpen && (
           <div
             className={`fixed z-50 ${
@@ -1319,6 +1314,8 @@ export default function Chat() {
               width: isMaximized ? "100%" : undefined,
               height: isMaximized ? "100vh" : undefined,
               borderRadius: isMaximized ? "0" : "12px",
+              // Added bottom margin to avoid overlapping with icons panel
+              marginBottom: showIcons && !isMaximized ? "60px" : "0",
             }}
           >
             <Card className="border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out h-full">
