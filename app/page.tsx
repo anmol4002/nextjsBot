@@ -1218,7 +1218,7 @@ export default function Chat() {
       }`}
     >
       <TooltipProvider>
-        {!showIcons &&  !isMaximized (
+        {!showIcons &&  !isMaximized && (
           <div className={`fixed bottom-4 right-6 z-50 animate-fadeInUp`}>
             <Tooltip>
               <TooltipTrigger asChild>
