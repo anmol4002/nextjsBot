@@ -1054,12 +1054,12 @@ export default function Chat() {
     if (showIcons) {
       state = 'icons-panel';
       height = 80;
-      width = 500;
+      width = 600;
     } else if (isChatOpen) {
       if (showQRImage) {
         state = 'qr-open';
         height = 700; 
-        width = 500;
+        width = 600;
       } else if (isMaximized) {
         state = 'chat-maximized';
         height = window.innerHeight;
@@ -1067,7 +1067,7 @@ export default function Chat() {
       } else {
         state = 'chat-open';
         height = 700;
-        width = 500;
+        width = 600;
       }
     }
     
@@ -1207,7 +1207,7 @@ export default function Chat() {
     setIsChatOpen(true);
     setIsMaximized(false);
    setShowIcons(false);
-    // setShowIcons(true);
+    setShowIcons(true);
   };
 
 
@@ -1215,7 +1215,7 @@ export default function Chat() {
     console.log("Closing QR and chat");
     setShowQRImage(false);
     setIsChatOpen(false);
-    // setShowIcons(true);
+    setShowIcons(true);
   };
   
   const sendDepartmentMessage = (department: string) => {
