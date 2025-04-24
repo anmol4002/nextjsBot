@@ -914,6 +914,20 @@
 // }
 // 😊😊😊😊😊😊😊😊
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client";
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
@@ -977,7 +991,6 @@ export default function Chat() {
   const widgetRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
 
   const {
     messages,
@@ -1040,29 +1053,10 @@ export default function Chat() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Don't process click outside if privacy policy modal is open
       if (isPolicyModalOpen) {
-        // Only process clicks outside the modal itself
-        if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-          setIsPolicyModalOpen(false);
-          // Reset to show message circle
-          setShowIcons(false);
-          setIsChatOpen(false);
-          
-          // Notify parent frame of state change
-          if (isMounted) {
-            window.parent.postMessage(
-              {
-                type: "widgetState",
-                state: "collapsed",
-              },
-              "*"
-            );
-          }
-        }
         return;
       }
-
+      
       if (
         !widgetRef.current?.contains(event.target as Node) &&
         !chatIconRef.current?.contains(event.target as Node)
@@ -1076,7 +1070,7 @@ export default function Chat() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showIcons, isChatOpen, isPolicyModalOpen, isMounted]);
+  }, [showIcons, isChatOpen, isPolicyModalOpen]);
 
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
@@ -1176,12 +1170,12 @@ export default function Chat() {
 
   const handleClosePolicyModal = () => {
     setIsPolicyModalOpen(false);
-    
-    // Notify parent about the state change - always return to message circle
+
+
+    setShowIcons(false);
+    setIsChatOpen(false);
+
     if (isMounted) {
-      setShowIcons(false);
-      setIsChatOpen(false);
-      
       window.parent.postMessage(
         {
           type: "widgetState",
@@ -1402,11 +1396,10 @@ export default function Chat() {
             onClose={() => setToast(null)}
           />
         )}
-        
+      
         <PrivacyPolicyModal
           isOpen={isPolicyModalOpen}
           onClose={handleClosePolicyModal}
-          ref={modalRef}
         />
       </TooltipProvider>
     </div>
