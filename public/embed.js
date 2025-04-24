@@ -46,65 +46,114 @@
 //   });
 // })();
 
+// 🌸🌸🌸🌸🌸🌸🌸🌸🌸
+
+// (function() {
+
+//   var iframe = document.createElement('iframe');
+//   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
+//   iframe.title = 'Punjab Government Chatbot';
+//   iframe.className = 'chatbotFrame';
+//   iframe.allowTransparency = true;
+//   iframe.frameBorder = '0';
+//   iframe.scrolling = 'yes';
+
+//   iframe.style.position = 'fixed';
+//   iframe.style.bottom = '0';
+//   iframe.style.right = '0';
+//   iframe.style.width = '150px';
+//   iframe.style.height = '150px';
+//   iframe.style.border = 'none';
+//   iframe.style.background = 'transparent';
+//   iframe.style.zIndex = '99999';
+//   iframe.style.overflow = 'visible';
+//   iframe.style.float = 'none';
+  
+
+//   document.body.appendChild(iframe);
+  
+//   window.addEventListener('message', function(event) {
+
+//     if (event.origin !== 'https://nextjs-bot-ten.vercel.app') {
+//       return;
+//     }
+ 
+//     if (event.data && event.data.type === 'CHATBOT_STATE') {
+//       switch(event.data.state) {
+//         case 'icon':
+         
+//           iframe.style.width = '150px';
+//           iframe.style.height = '150px';
+//           break;
+          
+//         case 'icons':
+        
+//           iframe.style.width = '500px'; 
+//           iframe.style.height = '100px';  
+//           break;
+          
+//         case 'open':
+       
+//           if (event.data.maximized) {
+         
+//             iframe.style.width = '100%';
+//             iframe.style.height = '100%';
+//           } else {
+            
+//             iframe.style.width = '500px';  
+//             iframe.style.height = '600px'; 
+//           }
+//           break;
+//       }
+//     }
+//   });
+// })();
+
+
+
+
+
+
+
+
+
 
 
 (function() {
-
   var iframe = document.createElement('iframe');
   iframe.src = 'https://nextjs-bot-ten.vercel.app/widget';
-  iframe.title = 'Punjab Government Chatbot';
-  iframe.className = 'chatbotFrame';
-  iframe.allowTransparency = true;
-  iframe.frameBorder = '0';
-  iframe.scrolling = 'yes';
-
   iframe.style.position = 'fixed';
   iframe.style.bottom = '0';
   iframe.style.right = '0';
-  iframe.style.width = '150px';
+  iframe.style.width = '150px'; 
   iframe.style.height = '150px';
   iframe.style.border = 'none';
   iframe.style.background = 'transparent';
   iframe.style.zIndex = '99999';
-  iframe.style.overflow = 'visible';
-  iframe.style.float = 'none';
+  iframe.title = 'Punjab Government Chatbot';
+  iframe.allowTransparency = 'true';
+  iframe.className = 'chatbotFrame';
+  iframe.setAttribute('frameborder', '0');
+  iframe.setAttribute('scrolling', 'yes');  
+  iframe.style.overflow = 'auto';
   
-
   document.body.appendChild(iframe);
-  
-  window.addEventListener('message', function(event) {
 
-    if (event.origin !== 'https://nextjs-bot-ten.vercel.app') {
-      return;
-    }
- 
-    if (event.data && event.data.type === 'CHATBOT_STATE') {
-      switch(event.data.state) {
-        case 'icon':
-         
-          iframe.style.width = '150px';
-          iframe.style.height = '150px';
-          break;
-          
-        case 'icons':
-        
-          iframe.style.width = '500px'; 
-          iframe.style.height = '100px';  
-          break;
-          
-        case 'open':
-       
-          if (event.data.maximized) {
-         
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-          } else {
-            
-            iframe.style.width = '500px';  
-            iframe.style.height = '600px'; 
-          }
-          break;
+  function handleMessage(event) {
+    if (event.origin !== "https://nextjs-bot-ten.vercel.app") return;
+    
+    if (event.data.type === 'widgetState') {
+      if (event.data.state === 'expanded') {
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.overflow = 'auto';
+      } else {
+        iframe.style.width = '150px';
+        iframe.style.height = '150px';
+        iframe.style.overflow = 'visible';
       }
     }
-  });
+  }
+
+  window.addEventListener('message', handleMessage);
 })();
