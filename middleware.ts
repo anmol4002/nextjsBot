@@ -62,6 +62,7 @@ const allowedDomains = [
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'github.com',
+  'github.io',
   'anmolbenipal.github.io'
 ]
 
@@ -105,6 +106,7 @@ export function middleware(request: NextRequest) {
   const isAllowedReferer = allowedDomains.some(allowed => 
     domain === allowed || 
     domain.endsWith(`.${allowed}`) ||
+     domain.endsWith(`${allowed}`) ||
     domain.includes(allowed)
   )
 
