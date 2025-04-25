@@ -107,10 +107,14 @@
 
 <script>
 (function() {
-  // List of approved domains
+  
   const allowedDomains = [
-    'connect.punjab.gov.in',
-    'nextjs-bot-ten.vercel.app'
+    'localhost:3000',
+  '127.0.0.1:5500',
+  'connect.punjab.gov.in',
+  'github.com',
+  'github.io',
+  'anmolbenipal.github.io',
   ];
   
   // Check current domain
