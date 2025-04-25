@@ -60,60 +60,50 @@ const allowedOrigins = [
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'anmolbenipal.github.io',
-  'localhost:5000',
+  'localhost:5000',  
   '127.0.0.1:5500'
 ]
 
 export function middleware(request: NextRequest) {
-  const referer = request.headers.get('referer') || ''
-  const origin = request.headers.get('origin') || ''
-  
-  let hostname = '';
-  let port = '';
-  let isAllowed = false;
-  
-  try {
-  
-    if (referer) {
-      const url = new URL(referer);
-      hostname = url.hostname;
-      port = url.port;
-      const fullOrigin = port ? `${hostname}:${port}` : hostname;
-      
-      isAllowed = allowedOrigins.some(allowed => 
-        fullOrigin === allowed || 
-        hostname === allowed
-      );
-    }
-    
-
-    if (!isAllowed && origin) {
-      const url = new URL(origin);
-      hostname = url.hostname;
-      port = url.port;
-      const fullOrigin = port ? `${hostname}:${port}` : hostname;
-      
-      isAllowed = allowedOrigins.some(allowed => 
-        fullOrigin === allowed || 
-        hostname === allowed
-      );
-    }
-    
-
-    if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
-  } catch (e) {
-    console.error('Error parsing referer/origin:', e);
  
-    if (request.nextUrl.pathname.startsWith('/widget')) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+  const host = request.headers.get('host') || '';
+  const referer = request.headers.get('referer') || '';
+  const origin = request.headers.get('origin') || '';
+  
+  
+  let isAllowed = false;
+
+  isAllowed = allowedOrigins.includes(host);
+  
+ 
+  if (!isAllowed) {
+    try {
+      if (referer) {
+        const url = new URL(referer);
+        const fullOrigin = url.port ? `${url.hostname}:${url.port}` : url.hostname;
+        isAllowed = allowedOrigins.includes(fullOrigin) || allowedOrigins.includes(url.hostname);
+      }
+      
+      if (!isAllowed && origin) {
+        const url = new URL(origin);
+        const fullOrigin = url.port ? `${url.hostname}:${url.port}` : url.hostname;
+        isAllowed = allowedOrigins.includes(fullOrigin) || allowedOrigins.includes(url.hostname);
+      }
+    } catch (e) {
+      console.error('Error parsing referer/origin:', e);
+      isAllowed = false;
     }
   }
-  
+
+  console.log('Is allowed:', isAllowed);
+
+  if (!isAllowed) {
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/widget/:path*']
+  matcher: ['/:path*']
 }
