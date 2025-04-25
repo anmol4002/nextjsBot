@@ -53,8 +53,6 @@
 
 
 
-
-
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
@@ -65,21 +63,19 @@ const allowedDomains = [
   'anmolbenipal.github.io',
   'vercel.com',
   'github.io'
-
 ]
 
 export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || ''
-
   const isLocalAllowed = (
     host === 'localhost:3000' ||
     host === '127.0.0.1:5500' 
   )
-
+  
   const referer = request.headers.get('referer') || ''
   const origin = request.headers.get('origin') || ''
-
   let domain = ''
+  
   try {
     if (referer) {
       const url = new URL(referer)
@@ -91,23 +87,29 @@ export function middleware(request: NextRequest) {
   } catch (e) {
     console.error('Error parsing referer/origin:', e)
   }
-
+  
   const isAllowedReferer = allowedDomains.some(allowed => 
     domain === allowed || 
     domain.endsWith(`.${allowed}`) ||
-    domain.endsWith(`${allowed}`) ||
     domain.includes(allowed)
   )
-
-
-  if (request.nextUrl.pathname.startsWith('/widget') && !isLocalAllowed && !isAllowedReferer) {
+  
+  const isAllowed = isLocalAllowed || isAllowedReferer
+  
+ 
+  if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
-
-  if (!request.nextUrl.pathname.startsWith('/widget') && (isLocalAllowed || isAllowedReferer)) {
+  
+ 
+  if (
+    (request.nextUrl.pathname === '/' || 
+     request.nextUrl.pathname === '/embed.js') && 
+    isAllowed
+  ) {
     return NextResponse.redirect(new URL('/widget', request.url))
   }
-
+  
   return NextResponse.next()
 }
 
