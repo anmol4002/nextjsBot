@@ -47,6 +47,8 @@
 
 
 
+
+
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
@@ -59,42 +61,51 @@ const allowedDomains = [
   'vercel.com'
 ]
 
-// Local hosts are handled separately
-const localHosts = [
+// Strictly allowed local hosts
+const allowedLocalHosts = [
   'localhost:3000',
   '127.0.0.1:5500'
 ]
 
 export function middleware(request: NextRequest) {
+  // Get the host directly from the request
   const host = request.headers.get('host') || ''
-  const referer = request.headers.get('referer') || ''
-  const origin = request.headers.get('origin') || ''
   
-  // Check if it's a local environment first
-  const isLocalAllowed = localHosts.includes(host)
+  // Check if it's one of our specifically allowed local hosts
+  const isLocalAllowed = allowedLocalHosts.includes(host)
   
-  // If not local, check remote domains
-  let domain = '';
-  try {
-    if (referer) {
-      const url = new URL(referer)
-      domain = url.hostname || url.host
-    } else if (origin) {
-      const url = new URL(origin)
-      domain = url.hostname || url.host
+  // For non-local requests, check referer/origin against allowed domains
+  let isAllowedRemote = false
+  
+  if (!isLocalAllowed) {
+    const referer = request.headers.get('referer') || ''
+    const origin = request.headers.get('origin') || ''
+    let domain = ''
+    
+    try {
+      if (referer) {
+        const url = new URL(referer)
+        domain = url.host
+      } else if (origin) {
+        const url = new URL(origin)
+        domain = url.host
+      }
+    } catch (e) {
+      console.error('Error parsing referer/origin:', e)
     }
-  } catch (e) {
-    console.error('Error parsing referer/origin:', e)
+    
+    isAllowedRemote = allowedDomains.some(allowed => 
+      domain === allowed || 
+      domain.endsWith(`.${allowed}`) ||
+      domain.includes(allowed)
+    )
   }
- 
-  const isAllowedRemoteDomain = allowedDomains.some(allowed => 
-    domain === allowed || 
-    domain.endsWith(`.${allowed}`) ||
-    domain.includes(allowed)
-  )
   
-  const isAllowed = isLocalAllowed || isAllowedRemoteDomain
-
+  const isAllowed = isLocalAllowed || isAllowedRemote
+  
+  // Debug logging (remove in production)
+  console.log(`Request host: ${host}, isAllowed: ${isAllowed}`)
+  
   // If trying to access /widget but not allowed, redirect to /unauthorized
   if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
@@ -111,7 +122,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/widget/:path*', '/embed.js', '/']
 }
-
 
 
 
