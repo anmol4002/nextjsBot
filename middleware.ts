@@ -56,13 +56,13 @@
 
 
 
-
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
+// Define allowed hosts including specific local development ports
 const allowedHosts = [
-  'localhost:3000',
-  '127.0.0.1:5500',
+  'localhost:3000',      // Local development with Next.js
+  '127.0.0.1:5500',      // Live Server in VS Code
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'github.com',
@@ -70,7 +70,18 @@ const allowedHosts = [
   'anmolbenipal.github.io'
 ];
 
+// Define hosts that can embed the widget
+const allowedEmbedders = [
+  'localhost:3000',
+  '127.0.0.1:5500',
+  'connect.punjab.gov.in',
+  'github.com',
+  'github.io',
+  'anmolbenipal.github.io'
+];
+
 export function middleware(request: NextRequest) {
+  // Get referer and origin headers
   const referer = request.headers.get('referer');
   const origin = request.headers.get('origin');
   
@@ -86,13 +97,29 @@ export function middleware(request: NextRequest) {
     // Silent fail if URL parsing fails
   }
   
-  const isAllowed = allowedHosts.some(allowed => 
-    fullHost === allowed || fullHost.endsWith(`.${allowed}`)
-  );
+
+  const isWidgetRequest = request.nextUrl.pathname.startsWith('/widget');
+  const isEmbedRequest = request.nextUrl.pathname === '/embed.js';
   
-  // Block protected paths for unauthorized hosts
-  if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
-    return NextResponse.redirect(new URL('/unauthorized', request.url));
+
+  if (isWidgetRequest) {
+    const isAllowed = allowedHosts.some(allowed => 
+      fullHost === allowed || fullHost.endsWith(`.${allowed}`)
+    );
+
+    if (!isAllowed) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    }
+  }
+
+  if (isEmbedRequest) {
+    const isAllowedEmbedder = allowedEmbedders.some(allowed => 
+      fullHost === allowed || fullHost.endsWith(`.${allowed}`)
+    );
+
+    if (!isAllowedEmbedder) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    }
   }
   
   return NextResponse.next();
