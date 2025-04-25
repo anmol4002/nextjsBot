@@ -62,23 +62,23 @@ const allowedDomains = [
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'github.com',
-  'github.io',
-  'anmolbenipal.github.io'
+  'anmolbenipal.github.io',
+  'vercel.com',
+  'github.io'
+
 ]
 
 export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || ''
-  
 
-  const allowedLocalPorts = [3000, 5500]
-  const isLocalAllowed = allowedLocalPorts.some(port => 
-    host === `localhost:${port}` || 
-    host === `127.0.0.1:${port}`
+  const isLocalAllowed = (
+    host === 'localhost:3000' ||
+    host === '127.0.0.1:5500' 
   )
 
   const referer = request.headers.get('referer') || ''
   const origin = request.headers.get('origin') || ''
-  
+
   let domain = ''
   try {
     if (referer) {
@@ -92,35 +92,22 @@ export function middleware(request: NextRequest) {
     console.error('Error parsing referer/origin:', e)
   }
 
-
-  if (request.nextUrl.pathname === '/unauthorized') {
-    const isAllowed = allowedDomains.some(allowed => 
-      domain.includes(allowed) || 
-      isLocalAllowed
-    )
-    if (isAllowed) {
-      return NextResponse.redirect(new URL('/widget', request.url))
-    }
-  }
-
   const isAllowedReferer = allowedDomains.some(allowed => 
     domain === allowed || 
     domain.endsWith(`.${allowed}`) ||
-     domain.endsWith(`${allowed}`) ||
+    domain.endsWith(`${allowed}`) ||
     domain.includes(allowed)
   )
 
 
-  
   if (request.nextUrl.pathname.startsWith('/widget') && !isLocalAllowed && !isAllowedReferer) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 
- 
   if (!request.nextUrl.pathname.startsWith('/widget') && (isLocalAllowed || isAllowedReferer)) {
     return NextResponse.redirect(new URL('/widget', request.url))
   }
-  
+
   return NextResponse.next()
 }
 
