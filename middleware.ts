@@ -63,7 +63,8 @@ import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
 const allowedDomains = [
-  
+  '127.0.0.1:5500',
+  'anmolbenipal.github.io',
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'github.com',
@@ -72,7 +73,7 @@ const allowedDomains = [
 export function middleware(request: NextRequest) {
 
   const host = request.headers.get('host') || ''
-  const isLocal = host === 'localhost:3000' || '127.0.0.1:5500'
+  const isLocal = host === 'localhost:3000'
   
 
   const referer = request.headers.get('referer') || ''
