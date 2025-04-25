@@ -44,46 +44,76 @@
 // }
 
 
+
+
+
+
+
+
+
+
+
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
-const allowedHosts = [
-  'localhost:5000',
-  '127.0.0.1:5500',
+const allowedOrigins = [
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
-  'github.com',
-  'github.io',  
-  'anmolbenipal.github.io'  
+  'anmolbenipal.github.io',
+  'localhost:3000',
+  '127.0.0.1:5500'
 ]
 
 export function middleware(request: NextRequest) {
   const referer = request.headers.get('referer') || ''
   const origin = request.headers.get('origin') || ''
   
-  let fullHost = '';
+  let hostname = '';
+  let port = '';
+  let isAllowed = false;
+  
   try {
+    // Check referer
     if (referer) {
-      fullHost = new URL(referer).host
-    } else if (origin) {
-      fullHost = new URL(origin).host
+      const url = new URL(referer);
+      hostname = url.hostname;
+      port = url.port;
+      const fullOrigin = port ? `${hostname}:${port}` : hostname;
+      
+      isAllowed = allowedOrigins.some(allowed => 
+        fullOrigin === allowed || 
+        hostname === allowed
+      );
+    }
+    
+
+    if (!isAllowed && origin) {
+      const url = new URL(origin);
+      hostname = url.hostname;
+      port = url.port;
+      const fullOrigin = port ? `${hostname}:${port}` : hostname;
+      
+      isAllowed = allowedOrigins.some(allowed => 
+        fullOrigin === allowed || 
+        hostname === allowed
+      );
+    }
+    
+
+    if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
     }
   } catch (e) {
-    console.error('Error parsing referer/origin:', e)
-  }
+    console.error('Error parsing referer/origin:', e);
  
-  const isAllowed = allowedHosts.some(allowed => 
-    fullHost === allowed || 
-    fullHost.endsWith(`.${allowed}`)
-  )
-  
-  if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
-    return NextResponse.redirect(new URL('/unauthorized', request.url))
+    if (request.nextUrl.pathname.startsWith('/widget')) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    }
   }
   
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/widget/:path*', '/embed.js']
+  matcher: ['/widget/:path*']
 }
