@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
 const allowedDomains = [
-  'localhost',
+  'localhost:5500',
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'github.com',
