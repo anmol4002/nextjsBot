@@ -117,7 +117,6 @@ const PRODUCTION_DOMAINS = [
   '127.0.0.1:3000',
   'localhost:3000',
   'connect.punjab.gov.in',
-  'nextjs-bot-ten.vercel.app',
   'github.com',
   'github.io',
   'anmolbenipal.github.io',
