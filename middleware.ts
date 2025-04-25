@@ -66,7 +66,8 @@ const allowedHosts = [
   'nextjs-bot-ten.vercel.app',
   'github.com',
   'github.io',
-  'anmolbenipal.github.io'
+  'anmolbenipal.github.io',
+  'vercel.com'
 ];
 
 export function middleware(request: NextRequest) {
