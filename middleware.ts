@@ -65,7 +65,7 @@ const allowedHosts = [
   'localhost:5000',    // Only this exact host:port
   '127.0.0.1:5500',    // Only this exact host:port
   'connect.punjab.gov.in',
-  'nextjs-bot-ten.vercel.app',
+'vercel.com',
   'github.com',
   'github.io',  
   'anmolbenipal.github.io'  
