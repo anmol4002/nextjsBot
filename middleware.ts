@@ -60,7 +60,7 @@ const allowedOrigins = [
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'anmolbenipal.github.io',
-  'localhost:3000',
+  'localhost:5000',
   '127.0.0.1:5500'
 ]
 
@@ -73,7 +73,7 @@ export function middleware(request: NextRequest) {
   let isAllowed = false;
   
   try {
-    // Check referer
+  
     if (referer) {
       const url = new URL(referer);
       hostname = url.hostname;
