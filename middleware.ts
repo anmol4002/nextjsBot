@@ -57,48 +57,47 @@
 
 
 
+import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
-import { NextResponse } from 'next/server'
-import { NextRequest } from 'next/server'
-
-const allowedHosts = [ 
-  'localhost:5000',
+const allowedHosts = [
+  'localhost:3000',
   '127.0.0.1:5500',
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'github.com',
-  'github.io',  
-  'anmolbenipal.github.io'  
-]
+  'github.io',
+  'anmolbenipal.github.io'
+];
 
 export function middleware(request: NextRequest) {
-  const referer = request.headers.get('referer') || ''
-  const origin = request.headers.get('origin') || ''
+  const referer = request.headers.get('referer');
+  const origin = request.headers.get('origin');
   
-  let fullHost = ''; 
+  let fullHost = '';
+  
   try {
     if (referer) {
-      fullHost = new URL(referer).host
+      fullHost = new URL(referer).host;
     } else if (origin) {
-      fullHost = new URL(origin).host
+      fullHost = new URL(origin).host;
     }
-  } catch (e) {
-    console.error('Error parsing referer/origin:', e)
+  } catch {
+    // Silent fail if URL parsing fails
   }
- 
+  
   const isAllowed = allowedHosts.some(allowed => 
-    fullHost === allowed || 
-    fullHost.endsWith(`.${allowed}`)
-  )
+    fullHost === allowed || fullHost.endsWith(`.${allowed}`)
+  );
   
-  // Only blocks /widget* paths for unauthorized hosts
+  // Block protected paths for unauthorized hosts
   if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
-    return NextResponse.redirect(new URL('/unauthorized', request.url))
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
   
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/widget/:path*', '/embed.js'] 
-}
+  matcher: ['/widget/:path*', '/embed.js']
+};
