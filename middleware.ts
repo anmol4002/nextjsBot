@@ -59,22 +59,12 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-// Define allowed hosts including specific local development ports
+// Define allowed hosts
 const allowedHosts = [
-  'localhost:3000',      // Local development with Next.js
-  '127.0.0.1:5500',      // Live Server in VS Code
-  'connect.punjab.gov.in',
-  'nextjs-bot-ten.vercel.app',
-  'github.com',
-  'github.io',
-  'anmolbenipal.github.io'
-];
-
-// Define hosts that can embed the widget
-const allowedEmbedders = [
   'localhost:3000',
   '127.0.0.1:5500',
   'connect.punjab.gov.in',
+  'nextjs-bot-ten.vercel.app',
   'github.com',
   'github.io',
   'anmolbenipal.github.io'
@@ -88,43 +78,32 @@ export function middleware(request: NextRequest) {
   let fullHost = '';
   
   try {
+    // Try to extract host from referer or origin
     if (referer) {
       fullHost = new URL(referer).host;
     } else if (origin) {
       fullHost = new URL(origin).host;
     }
   } catch {
-    // Silent fail if URL parsing fails
+    // If URL parsing fails, treat as unauthorized
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
   
+  // Check if the host is in the allowed list
+  const isAllowed = allowedHosts.some(allowed => 
+    fullHost === allowed || fullHost.endsWith(`.${allowed}`)
+  );
 
-  const isWidgetRequest = request.nextUrl.pathname.startsWith('/widget');
-  const isEmbedRequest = request.nextUrl.pathname === '/embed.js';
-  
-
-  if (isWidgetRequest) {
-    const isAllowed = allowedHosts.some(allowed => 
-      fullHost === allowed || fullHost.endsWith(`.${allowed}`)
-    );
-
-    if (!isAllowed) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
-  }
-
-  if (isEmbedRequest) {
-    const isAllowedEmbedder = allowedEmbedders.some(allowed => 
-      fullHost === allowed || fullHost.endsWith(`.${allowed}`)
-    );
-
-    if (!isAllowedEmbedder) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
+  // If requesting widget path and not allowed, redirect to unauthorized
+  if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
   
+  // Otherwise proceed with the request
   return NextResponse.next();
 }
 
+// Apply middleware only to widget paths and embed.js
 export const config = {
   matcher: ['/widget/:path*', '/embed.js']
 };
