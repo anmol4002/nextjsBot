@@ -120,7 +120,6 @@ const PRODUCTION_DOMAINS = [
   'github.com',
   'github.io',
   'anmolbenipal.github.io',
-  'vercel.com'
 ];
 
 export function middleware(request: NextRequest) {
