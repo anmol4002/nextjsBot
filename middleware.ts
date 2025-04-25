@@ -48,81 +48,61 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
-const allowedDomains = [
+const allowedHosts = [
+  'localhost:5000',    // Only this exact host:port
+  '127.0.0.1:5500',    // Only this exact host:port
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
   'github.com',
   'github.io',  
-  'anmolbenipal.github.io',
-  'vercel.com'
-]
-
-const allowedLocalHosts = [
-  'localhost:3000',
-  '127.0.0.1:5500'
+  'anmolbenipal.github.io'  
 ]
 
 export function middleware(request: NextRequest) {
-  const host = request.headers.get('host') || ''
-  const referer = request.headers.get('referer') || ''
-  const origin = request.headers.get('origin') || ''
+  const origin = request.headers.get('origin') || request.headers.get('referer') || '';
   
-  // Check if it's an allowed local host
-  const isLocalAllowed = allowedLocalHosts.includes(host)
-  
-  // For non-local requests, check referer/origin against allowed domains
-  let isAllowedRemote = false
-  
-  if (!isLocalAllowed) {
-    let domain = ''
-    
-    try {
-      if (referer) {
-        const url = new URL(referer)
-        domain = url.hostname
-      } else if (origin) {
-        const url = new URL(origin)
-        domain = url.hostname
-      }
-    } catch (e) {
-      console.error('Error parsing referer/origin:', e)
+  let requestHost = '';
+  try {
+    if (origin) {
+      const url = new URL(origin);
+      requestHost = url.host; // Gets "domain:port"
     }
-    
-    // More precise domain matching
-    isAllowedRemote = allowedDomains.some(allowed => 
-      domain === allowed || 
-      domain.endsWith(`.${allowed}`) ||
-      (domain === `www.${allowed}`)
-    )
+  } catch (e) {
+    console.error('Error parsing origin:', e);
   }
-  
-  const isAllowed = isLocalAllowed || isAllowedRemote
-  
-  // If trying to access /widget but not allowed, redirect to /unauthorized
-  if (request.nextUrl.pathname.startsWith('/widget') && !isAllowed) {
-    return NextResponse.redirect(new URL('/unauthorized', request.url))
+
+  // Check if the request host is allowed
+  const isAllowed = allowedHosts.some(allowed => 
+    requestHost === allowed || 
+    requestHost.endsWith(`.${allowed}`)
+  );
+
+  // Block ALL requests from unauthorized hosts
+  if (!isAllowed) {
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
   }
-  
-  // If on root path and allowed, redirect to /widget
-  if (request.nextUrl.pathname === '/' && isAllowed) {
-    return NextResponse.redirect(new URL('/widget', request.url))
-  }
-  
-  // Add security headers to all responses
-  const response = NextResponse.next()
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  
-  return response
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/widget/:path*', '/embed.js', '/']
+  // Applies to ALL routes except:
+  // - Next.js internal routes (_next, _vercel)
+  // - The unauthorized page itself
+  matcher: ['/((?!_next|_vercel|unauthorized).*)']
 }
-
-
-
