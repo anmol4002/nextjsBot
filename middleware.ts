@@ -55,7 +55,6 @@
 
 
 
-
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
@@ -69,7 +68,7 @@ const allowedDomains = [
 export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || ''
   
-  
+  // STRICT LOCALHOST PORT CHECK (ONLY 3000 & 5500)
   const allowedLocalPorts = [3000, 5500]
   const isLocalAllowed = allowedLocalPorts.some(port => 
     host === `localhost:${port}` || 
@@ -98,12 +97,17 @@ export function middleware(request: NextRequest) {
     domain.includes(allowed)
   )
   
+  // Debugging logs (optional)
+  console.log('Host:', host)
+  console.log('Is local allowed:', isLocalAllowed)
+  console.log('Referer domain:', domain)
 
-
+  // Block unauthorized access to /widget
   if (request.nextUrl.pathname.startsWith('/widget') && !isLocalAllowed && !isAllowedReferer) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 
+  // Redirect allowed requests to /widget
   if (!request.nextUrl.pathname.startsWith('/widget') && (isLocalAllowed || isAllowedReferer)) {
     return NextResponse.redirect(new URL('/widget', request.url))
   }
@@ -113,5 +117,4 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ['/widget/:path*', '/embed.js', '/']
-}
 }
