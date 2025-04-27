@@ -128,7 +128,7 @@ import type { NextRequest } from "next/server";
 
 const ALLOWED_LOCAL_HOSTS = ["localhost:3000"];
 const PRODUCTION_DOMAINS = [
-  '127.0.0.1:3000',
+  '127.0.0.1:5500',
   'localhost:3000',
   'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
