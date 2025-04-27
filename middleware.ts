@@ -224,23 +224,21 @@
 
 
 
-
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-
+// Allowed domains that can embed the chatbot
 const allowedDomains = [
-    'localhost:3000',
- '127.0.0.1:5500',
   'connect.punjab.gov.in',
   'github.com',
   'github.io',
   'anmolbenipal.github.io',
 ];
 
-
+// Local development hosts
 const devHosts = [
- 'localhost:3000',
+  'localhost:3000',
+  '127.0.0.1:5500',
 ];
 
 export function middleware(request: NextRequest) {
@@ -250,15 +248,15 @@ export function middleware(request: NextRequest) {
   // Check if we're in development environment
   const isDev = devHosts.some(host => currentHost.includes(host));
   
-  if (isDev) {
-    // Allow all requests in development mode
-    return NextResponse.next();
-  }
-  
   // Skip checks for static assets and images
   if (url.pathname.startsWith('/images/') || 
       url.pathname.startsWith('/_next/') ||
       url.pathname.startsWith('/favicon.ico')) {
+    return NextResponse.next();
+  }
+  
+  // Always allow access to embed.js - this is crucial for testing
+  if (url.pathname === '/embed.js') {
     return NextResponse.next();
   }
   
@@ -267,9 +265,19 @@ export function middleware(request: NextRequest) {
     const referer = request.headers.get('referer');
     const origin = request.headers.get('origin');
     
-    // Direct access without referer/origin is blocked
-    if (!referer && !origin) {
+    // If it's development environment, allow direct access
+    if (isDev && (!referer && !origin)) {
+      return NextResponse.next();
+    }
+    
+    // Direct access without referer/origin is blocked in production
+    if (!isDev && (!referer && !origin)) {
       return NextResponse.rewrite(new URL('/unauthorized', request.url));
+    }
+    
+    // For development environment, allow all requests
+    if (isDev) {
+      return NextResponse.next();
     }
     
     // Process referer or origin to check domain
@@ -290,8 +298,11 @@ export function middleware(request: NextRequest) {
       sourceHost === domain || sourceHost.endsWith(`.${domain}`)
     );
     
-    if (!isAllowed) {
-      // For all unauthorized requests (including embed.js), redirect to unauthorized page
+    // Also allow from local file system (for testing with file:// protocol)
+    const isLocalFile = sourceHost === '' || referer?.startsWith('file://');
+    
+    if (!isAllowed && !isLocalFile) {
+      // For all unauthorized requests, redirect to unauthorized page
       return NextResponse.rewrite(new URL('/unauthorized', request.url));
     }
   }
