@@ -105,65 +105,86 @@
 //   matcher: ['/', '/embed.js']
 // };
 
-import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
 
-const allowedDomains = [
-  'localhost:3000', 
-  'connect.punjab.gov.in', 
-  'anmolbenipal.github.io', 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const ALLOWED_LOCAL_HOSTS = ["localhost:3000"];
+const PRODUCTION_DOMAINS = [
+  '127.0.0.1:3000',
+  'localhost:3000',
+  'connect.punjab.gov.in',
   'nextjs-bot-ten.vercel.app',
+  'github.com',
+  'github.io',
+  'anmolbenipal.github.io',
+  'vercel.com'
 ];
 
 export function middleware(request: NextRequest) {
- 
-  if (
-    request.nextUrl.pathname.startsWith('/_next') ||
-    request.nextUrl.pathname.startsWith('/api') ||
-    request.nextUrl.pathname.startsWith('/static') ||
-    request.nextUrl.pathname === '/unauthorized'
-  ) {
+  const { pathname } = request.nextUrl;
+  const host = request.headers.get("host") || "";
+
+  if (pathname.startsWith("/_next/")) {
     return NextResponse.next();
   }
 
 
-  const referer = request.headers.get('referer');
-  const origin = request.headers.get('origin');
-  const host = request.nextUrl.host;
+  if (process.env.NODE_ENV === "development") {
+    if (!ALLOWED_LOCAL_HOSTS.includes(host)) {
+      const unauthorizedUrl = request.nextUrl.clone();
+      unauthorizedUrl.pathname = "/unauthorized";
+      return NextResponse.rewrite(unauthorizedUrl);
+    }
+    return NextResponse.next();
+  }
 
-  let requestDomain = host; 
 
- 
-  if (referer || origin) {
+  if (pathname === "/embed.js") {
+    const referer = request.headers.get("referer");
+    if (!referer) return blockRequest(request);
+
     try {
-      requestDomain = new URL(referer || origin!).hostname;
+      const refererHost = new URL(referer).host;
+      const isAllowed = PRODUCTION_DOMAINS.some(
+        (domain) => refererHost === domain || refererHost.endsWith(`.${domain}`)
+      );
+      if (!isAllowed) return blockRequest(request);
     } catch {
-     
-      return NextResponse.rewrite(new URL('/unauthorized', request.url));
+      return blockRequest(request);
     }
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    if (requestDomain !== 'localhost:3000') {
-      return NextResponse.rewrite(new URL('/unauthorized', request.url));
-    }
-    return NextResponse.next();
-  }
-
-
-  const isAllowed = allowedDomains.some(
-    (domain) =>
-      requestDomain === domain || requestDomain.endsWith(`.${domain}`)
-  );
-
-  if (!isAllowed) {
-    return NextResponse.rewrite(new URL('/unauthorized', request.url));
   }
 
   return NextResponse.next();
 }
 
+function blockRequest(request: NextRequest) {
+  if (request.nextUrl.pathname === "/embed.js") {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+  const unauthorizedUrl = request.nextUrl.clone();
+  unauthorizedUrl.pathname = "/unauthorized";
+  return NextResponse.rewrite(unauthorizedUrl);
+}
+
 export const config = {
-  matcher: ['/', '/embed.js'], 
+  matcher: ["/", "/embed.js"],
 };
 
