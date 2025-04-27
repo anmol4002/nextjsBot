@@ -229,6 +229,8 @@ import { NextRequest } from 'next/server';
 
 // Allowed domains that can embed the chatbot
 const allowedDomains = [
+  'localhost:3000',
+  '127.0.0.1:5500',
   'connect.punjab.gov.in',
   'github.com',
   'github.io',
@@ -238,7 +240,6 @@ const allowedDomains = [
 // Local development hosts
 const devHosts = [
   'localhost:3000',
-  '127.0.0.1:5500',
 ];
 
 export function middleware(request: NextRequest) {
