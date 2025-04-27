@@ -228,25 +228,23 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-// Allowed domains that can embed the chatbot
+
 const allowedDomains = [
     'localhost:3000',
-  '127.0.0.1:5500',
+ '127.0.0.1:5500',
   'connect.punjab.gov.in',
   'github.com',
   'github.io',
   'anmolbenipal.github.io',
 ];
 
-// Local development hosts
+
 const devHosts = [
  'localhost:3000',
 ];
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  
-  // Get current host from request
   const currentHost = request.headers.get('host') || '';
   
   // Check if we're in development environment
