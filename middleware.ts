@@ -131,11 +131,9 @@ const PRODUCTION_DOMAINS = [
   '127.0.0.1:5500',
   'localhost:3000',
   'connect.punjab.gov.in',
-  'nextjs-bot-ten.vercel.app',
   'github.com',
   'github.io',
   'anmolbenipal.github.io',
-  'vercel.com'
 ];
 
 export function middleware(request: NextRequest) {
