@@ -136,8 +136,8 @@ const allowedDomains = [
 
 // Local development hosts
 const devHosts = [
-  'localhost',
-  '127.0.0.1',
+  'localhost:3000',
+  '127.0.0.1:5500',
 ];
 
 export function middleware(request: NextRequest) {
@@ -150,16 +150,23 @@ export function middleware(request: NextRequest) {
   const isDev = devHosts.some(host => currentHost.includes(host));
   
   if (isDev) {
-    // Allow all requests in development mode
+   
     return NextResponse.next();
   }
   
-  // For production: check all paths except /unauthorized
+  
+  if (url.pathname.startsWith('/images/') || 
+      url.pathname.startsWith('/_next/') ||
+      url.pathname.startsWith('/favicon.ico')) {
+    return NextResponse.next();
+  }
+  
+  
   if (url.pathname !== '/unauthorized') {
     const referer = request.headers.get('referer');
     const origin = request.headers.get('origin');
     
-    // Direct access without referer/origin is blocked
+    
     if (!referer && !origin) {
       return NextResponse.rewrite(new URL('/unauthorized', request.url));
     }
@@ -173,29 +180,29 @@ export function middleware(request: NextRequest) {
         sourceHost = new URL(origin).hostname;
       }
     } catch (error) {
-      // Invalid URL format in referer/origin
+
       console.error('Error parsing referer/origin:', error);
       return NextResponse.rewrite(new URL('/unauthorized', request.url));
     }
     
-    // Check if the source domain is allowed
+   
     const isAllowed = allowedDomains.some(domain => 
       sourceHost === domain || sourceHost.endsWith(`.${domain}`)
     );
     
     if (!isAllowed) {
-      // Unauthorized domain is trying to access
+    
       return NextResponse.rewrite(new URL('/unauthorized', request.url));
     }
   }
   
-  // Proceed with the request
+  
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Apply to all routes except for /unauthorized and api routes
-    '/((?!unauthorized|api|_next/static|_next/image|favicon.ico).*)'
+ 
+    '/((?!api|favicon.ico).*)'
   ]
 };
