@@ -14,16 +14,32 @@ interface ToastProps {
 export const Toast = ({ message, type, onClose }: ToastProps) => {
   const [visible, setVisible] = useState(true);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (type !== "loading") {
+  //     const timer = setTimeout(() => {
+  //       setVisible(false);
+  //       setTimeout(onClose, 200);
+  //     }, 4000);
+
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [onClose, type]);
+
+    useEffect(() => {
     if (type !== "loading") {
       const timer = setTimeout(() => {
         setVisible(false);
         setTimeout(onClose, 200);
       }, 4000);
-
+  
       return () => clearTimeout(timer);
     }
-  }, [onClose, type]);
+  }, [type, onClose]);
+  
+  useEffect(() => {
+    setVisible(true);
+  }, [message]);
+  
 
   return (
     <div
