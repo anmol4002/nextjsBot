@@ -24,7 +24,14 @@ export const useTokenManagement = () => {
   
   const generateTokens = useCallback(async () => {
     try {
-      const authToken = jwt.sign({ property: "Punjab Government" }, JWT_KEY, { expiresIn: "1h" });
+      const authToken = jwt.sign(
+        { property: "Punjab Government" },
+        JWT_KEY,
+        {
+          expiresIn: "1h",
+          noTimestamp: true, 
+        }
+      );
       const verificationToken = `verification-token-${Date.now()}`;
       
       setAuthToken(authToken);
