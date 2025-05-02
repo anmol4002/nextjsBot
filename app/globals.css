@@ -181,7 +181,7 @@ body {
     animation: fadeIn 0.6s ease-out forwards;
   }
 
-
+/* 
 .maximized-chat {
   position: fixed !important;
   top: 0 !important;
@@ -210,4 +210,4 @@ button, [role='button'], [onclick], a {
   pointer-events: auto !important;
 }
 
-
+ */
