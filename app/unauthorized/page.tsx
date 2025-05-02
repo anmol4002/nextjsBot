@@ -17,8 +17,6 @@ export default function UnauthorizedPage() {
           />
         </div>
 
-        
-        
         <div className="bg-gray-50 p-4 rounded-md mb-6 border border-gray-100">
           <p className="text-gray-600 text-sm">
             You do not have permission to access this resource. 
