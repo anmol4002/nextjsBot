@@ -16,12 +16,10 @@ export const getDepartmentCode = (departmentName: string, currentLanguage: Langu
   const langKey = currentLanguage === "auto" ? "en" : currentLanguage;
   const deptMapping = DEPARTMENT_MAPPING[langKey] || DEPARTMENT_MAPPING.en;
 
-  // Checking current language mapping
+
   if (Object.prototype.hasOwnProperty.call(deptMapping, departmentName)) {
     return deptMapping[departmentName as keyof typeof deptMapping];
   }
-
-  // Checking all language mappings
   for (const lang of ["en", "pa", "hi"] as const) {
     const mapping = DEPARTMENT_MAPPING[lang];
     if (Object.prototype.hasOwnProperty.call(mapping, departmentName)) {
@@ -29,7 +27,6 @@ export const getDepartmentCode = (departmentName: string, currentLanguage: Langu
     }
   }
 
-  // Trying to match by value
   for (const lang of ["en", "pa", "hi"] as const) {
     const mapping = DEPARTMENT_MAPPING[lang];
     for (const [, value] of Object.entries(mapping)) {
@@ -163,13 +160,11 @@ export const replaceDocsWithAnchors = (content: string, citations: Citation[] = 
           style="color: #999; cursor: not-allowed;">[${displayText}]</span>`;
   };
 
-  // Replacing URLs with anchor tags
   let processedContent = content.replace(
     /(https?:\/\/[^\s]+)/g,
     (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Link</a>`
   );
 
-  // Processing [docX] citations
   citations.forEach((citation, i) => {
     const docNum = i + 1;
     const docRegex = new RegExp(`\\[doc${docNum}\\]`, "gi");
@@ -181,7 +176,6 @@ export const replaceDocsWithAnchors = (content: string, citations: Citation[] = 
     );
   });
 
-  // Processing PDF file references
   const pdfRegex = /\[([^\]]+\.pdf)\]/gi;
   let match;
   
@@ -189,22 +183,19 @@ export const replaceDocsWithAnchors = (content: string, citations: Citation[] = 
     const pdfName = match[1];
     const index = match.index;
     const fullMatch = match[0];
-    
-    // Finding corresponding citation if available
+  
     const citation = citations.find(c => 
       c.title?.toLowerCase() === pdfName.toLowerCase() || 
       c.url?.toLowerCase().endsWith(pdfName.toLowerCase())
     );
     
     const replacement = createLink(citation?.url, citation?.title || '', pdfName);
-    
-    // Replacing only at the specific match position to avoid issues with duplicate PDF names
+   
     processedContent = 
       processedContent.substring(0, index) + 
       replacement + 
       processedContent.substring(index + fullMatch.length);
-    
-    // Reseting regex index to continue searching
+  
     pdfRegex.lastIndex = index + replacement.length;
   }
   return processedContent.replace(/\[doc\d+\]:\s*.*?\.\w+|\[doc\d+\]/g, "");
@@ -227,7 +218,6 @@ export const processStreamResponse = async (
   let hasStartedStreaming = false;
 
   try {
-    // Adding initial loading dots
     setMessages((prevMessages) => {
       const updatedMessages = [...prevMessages];
       updatedMessages.push({
@@ -268,7 +258,6 @@ export const processStreamResponse = async (
           if (parsedData?.content?.length >= 1) {
             if (!hasStartedStreaming) {
               hasStartedStreaming = true;
-              // Replace loading dots with actual content
               setMessages((prevMessages) => {
                 const updatedMessages = [...prevMessages];
                 updatedMessages[updatedMessages.length - 1] = {
