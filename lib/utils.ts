@@ -27,7 +27,7 @@ export type Citation = {
 
 export type Toast = {
   message: string;
-  type: "success" | "error" | "loading";
+  type: "success" | "error" | "info" | "loading";
   icon?: React.ReactNode;
   duration?: number;
 };
