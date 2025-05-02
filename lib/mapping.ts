@@ -35,7 +35,6 @@ export const translations = {
     },
   };
 
-// Department translations
 export const departmentTranslations = {
     en: {
       punchatbotindex: { name: "Sewa Kendras & G2C Services", emoji: "📙" },
@@ -67,8 +66,6 @@ export const departmentTranslations = {
   };
   
 
-
-// Defining department mapping with translations
 export const DEPARTMENT_MAPPING = {
     en: {
       "Sewa Kendras & G2C Services": "punchatbotindex",
@@ -99,7 +96,6 @@ export const DEPARTMENT_MAPPING = {
     },
   };
   
-  // Translating content for different languages
   export const TRANSLATIONS = {
     en: {
       disclaimer:
