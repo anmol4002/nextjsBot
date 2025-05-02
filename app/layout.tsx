@@ -1,12 +1,9 @@
-
 import type { Metadata } from "next";
-
 import "./globals.css";
 export const metadata: Metadata = {
   title: "Chatbot 🤖",
   description: "Punjab Government AI Assistant",
 };
-
 
 export default function RootLayout({
   children,
