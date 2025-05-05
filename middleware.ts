@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
-
 const allowedDomains = [
   'localhost:3000',
   '127.0.0.1:5500',
   'connect.punjab.gov.in',
+  'devconnectpunjab.psegs.in',
+  'stgconnectpunjab.psegs.in',
+  'uatconnectpunjab.psegs.in',
+  'connect.psegs.in',
   'github.com',
   'github.io',
   'anmolbenipal.github.io',
 ];
-
 
 const devHosts = [
   'localhost:3000',
@@ -19,8 +21,6 @@ const devHosts = [
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const currentHost = request.headers.get('host') || '';
-  
- 
   const isDev = devHosts.some(host => currentHost.includes(host));
   
   if (url.pathname.startsWith('/images/') || 
@@ -29,32 +29,26 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  
   if (url.pathname === '/embed.js') {
     return NextResponse.next();
   }
   
-
   if (url.pathname !== '/unauthorized') {
     const referer = request.headers.get('referer');
     const origin = request.headers.get('origin');
     
- 
     if (isDev && (!referer && !origin)) {
       return NextResponse.next();
     }
-    
     
     if (!isDev && (!referer && !origin)) {
       return NextResponse.rewrite(new URL('/unauthorized', request.url));
     }
     
-   
     if (isDev) {
       return NextResponse.next();
     }
     
-  
     let sourceHost = '';
     let fullSourceHost = ''; 
     
@@ -88,8 +82,6 @@ export function middleware(request: NextRequest) {
       return NextResponse.rewrite(new URL('/unauthorized', request.url));
     }
   }
-  
- 
   return NextResponse.next();
 }
 
