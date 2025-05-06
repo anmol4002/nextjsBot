@@ -17,7 +17,7 @@ interface CardFooterProps {
   onLanguageChange: (lang: string) => void;
   onToggleLanguageDropdown: () => void;
   getLanguageLabel: (lang: string) => string;
-  t:any;
+  t: any;
   languageDropdownRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -40,7 +40,7 @@ export default function CardFooter({
         <Input
           value={input}
           onChange={onInputChange}
-          className="flex-1 rounded-full border-gray-300 focus:ring-2 focus:ring-blue-500"
+          className="flex-1 rounded-full border-gray-300"
           placeholder={t.typePlaceholder}
           aria-label="Type your message"
         />
@@ -79,7 +79,9 @@ export default function CardFooter({
                   }`}
                   onClick={() => onLanguageChange(lang)}
                 >
-                  {lang === language && <span className="mr-2 text-blue-600">✓</span>}
+                  {lang === language && (
+                    <span className="mr-2 text-blue-600">✓</span>
+                  )}
                   {getLanguageLabel(lang)}
                 </button>
               ))}
@@ -111,19 +113,6 @@ export default function CardFooter({
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
