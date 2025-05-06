@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
-import { X, MessageCircle, ArrowDownCircle } from "lucide-react";
+import { X, MessageCircle } from "lucide-react";
 import { useCustomChat } from "@/hooks/useCustomChat";
 import { translations, departmentTranslations } from "@/lib/mapping";
 
@@ -267,14 +267,8 @@ export default function Chat() {
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-105 active:scale-95"
                   aria-label="Toggle chat icons"
                 >
-                  <div
-                    className={`transition-transform duration-500 ease-out }`}
-                  >
-                    {showIcons ? (
-                      <ArrowDownCircle size={28} className="w-7 h-7" />
-                    ) : (
-                      <MessageCircle size={28} className="w-7 h-7" />
-                    )}
+                  <div className="transition-transform duration-500 ease-out">
+                    <MessageCircle size={28} className="w-7 h-7" />
                   </div>
                 </Button>
               </TooltipTrigger>
@@ -453,5 +447,3 @@ export default function Chat() {
     </div>
   );
 }
-
-
