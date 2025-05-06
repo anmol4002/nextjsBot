@@ -17,7 +17,9 @@ interface CardFooterProps {
   onLanguageChange: (lang: string) => void;
   onToggleLanguageDropdown: () => void;
   getLanguageLabel: (lang: string) => string;
-  t: any;
+  t: {
+    typePlaceholder: string;
+  };
   languageDropdownRef: React.RefObject<HTMLDivElement>;
 }
 
