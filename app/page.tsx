@@ -116,7 +116,6 @@ export default function Chat() {
         setIsChatOpen(false);
       }
     };
-
     window.addEventListener("message", handleParentMessage);
     return () => window.removeEventListener("message", handleParentMessage);
   }, []);
@@ -135,7 +134,6 @@ export default function Chat() {
         }
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showIcons, isChatOpen, isPolicyModalOpen, toast]);
@@ -153,7 +151,6 @@ export default function Chat() {
       message: `Switching to ${getLanguageLabel(selectedLanguage)}...`,
       type: "loading",
     });
-
     try {
       setLanguage(selectedLanguage);
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -237,14 +234,12 @@ export default function Chat() {
 
   const handleOpenPolicyModal = () => {
     setIsPolicyModalOpen(true);
-
     setIsChatOpen(true);
     setShowIcons(true);
   };
 
   const handleClosePolicyModal = () => {
     setIsPolicyModalOpen(false);
-
     if (!isChatOpen) {
       setIsChatOpen(true);
     }
@@ -273,9 +268,7 @@ export default function Chat() {
                   aria-label="Toggle chat icons"
                 >
                   <div
-                    className={`transition-transform duration-500 ease-out ${
-                      showIcons ? "rotate-180" : "rotate-0"
-                    }`}
+                    className={`transition-transform duration-500 ease-out }`}
                   >
                     {showIcons ? (
                       <ArrowDownCircle size={28} className="w-7 h-7" />
@@ -350,7 +343,6 @@ export default function Chat() {
                   </div>
                 ))}
               </div>
-
               <div
                 className="animate-iconAppear flex-shrink-0 ml-1"
                 style={{ animationDelay: "0.4s" }}
@@ -461,7 +453,5 @@ export default function Chat() {
     </div>
   );
 }
-
-
 
 
