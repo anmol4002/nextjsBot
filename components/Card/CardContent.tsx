@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { Message } from "@/lib/utils";
-import { useMemo } from "react";
+import { useMemo, useCallback, memo } from "react";
 
 interface Translations {
   [key: string]: {
@@ -35,7 +35,7 @@ interface CardContentProps {
   setIsPolicyModalOpen: (open: boolean) => void;
 }
 
-export default function CardContent({
+function CardContent({
   messages,
   chatContainerRef,
   isMaximized,
@@ -46,42 +46,36 @@ export default function CardContent({
   language,
   setIsPolicyModalOpen,
 }: CardContentProps) {
- 
 
   const departmentOptions = useMemo(() => {
     const defaultLang = "en";
     const currentLang = language === "auto" ? defaultLang : language;
-    
-    return TRANSLATIONS[currentLang as keyof typeof TRANSLATIONS]?.departmentOptions || 
-           TRANSLATIONS[defaultLang]?.departmentOptions || 
-           [];
+    return TRANSLATIONS[currentLang]?.departmentOptions || TRANSLATIONS[defaultLang]?.departmentOptions || [];
   }, [TRANSLATIONS, language]);
 
-  
-  const formatTimestamp = (timestamp?: string | Date) => {
+  const formatTimestamp = useCallback((timestamp?: string | Date) => {
     if (!timestamp) return "";
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  }, []);
 
-  const getDocumentName = (url: string) => {
+  const getDocumentName = useCallback((url: string) => {
     try {
       const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split("/");
-      const fileName = pathParts[pathParts.length - 1];
-      return fileName.replace(/\.[^/.]+$/, "");
+      const fileName = urlObj.pathname.split("/").pop() || "Document";
+      return fileName.replace(/\.[^/.]+$/, "") || "Document";
     } catch {
       return "Document";
     }
-  };
+  }, []);
 
-  const isDepartmentSelectionMessage = (content: string) => {
+  const isDepartmentSelectionMessage = useCallback((content: string) => {
     return content === t.selectDepartment;
-  };
-  
-  const hasCitations = (message: Message): boolean => {
+  }, [t.selectDepartment]);
+
+  const hasCitations = useCallback((message: Message) => {
     return !message.isStreaming && Array.isArray(message.citations) && message.citations.length > 0;
-  };
+  }, []);
 
   return (
     <ScrollArea
@@ -93,32 +87,19 @@ export default function CardContent({
       }}
     >
       <div className="space-y-3 pr-2">
-        {messages.map((message: Message, index) => {
+        {messages.map((message, index) => {
           const isUserMessage = message.role === "user";
           const isDisclaimerMessage = !isUserMessage && message.content.startsWith(t.disclaimerPrefix);
-          const hasReferences = hasCitations(message);
-          
+          const referencesExist = hasCitations(message);
+
           return (
-            <div
-              key={index}
-              className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`flex flex-col pr-2 ${isMaximized ? "max-w-4xl" : "max-w-[85%]"} w-full`}
-              >
-                <div
-                  className={`flex items-center text-xs text-gray-500 mb-1 ${
-                    isUserMessage ? "justify-end" : ""
-                  }`}
-                >
-                  {!isUserMessage && (
-                    <span className="font-semibold">{t.assistant}</span>
-                  )}
-                  <span className="ml-2 mr-2">
-                    {formatTimestamp(message.timestamp)}
-                  </span>
+            <div key={index} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
+              <div className={`flex flex-col pr-2 ${isMaximized ? "max-w-4xl" : "max-w-[85%]"} w-full`}>
+                <div className={`flex items-center text-xs text-gray-500 mb-1 ${isUserMessage ? "justify-end" : ""}`}>
+                  {!isUserMessage && <span className="font-semibold">{t.assistant}</span>}
+                  <span className="ml-2 mr-2">{formatTimestamp(message.timestamp)}</span>
                 </div>
-  
+
                 <div
                   className={`px-4 py-2 rounded-lg shadow-sm text-sm leading-relaxed border border-gray-200 w-full ${
                     isUserMessage
@@ -127,18 +108,13 @@ export default function CardContent({
                       ? "bg-red-50 text-gray-600 border-red-200 rounded-bl-none"
                       : "bg-gray-100 text-gray-800 rounded-bl-none"
                   }`}
-                  style={{
-                    wordWrap: "break-word",
-                    overflowWrap: "break-word",
-                  }}
+                  style={{ wordWrap: "break-word", overflowWrap: "break-word" }}
                 >
                   {isDepartmentSelectionMessage(message.content) ? (
                     <div>
-                      <div className="mb-3 font-medium text-gray-700">
-                        {message.content}
-                      </div>
+                      <div className="mb-3 font-medium text-gray-700">{message.content}</div>
                       <div className="flex flex-wrap gap-2">
-                        {departmentOptions.map((department: string, idx: number) => (
+                        {departmentOptions.map((department, idx) => (
                           <button
                             key={`${department}-${idx}`}
                             className={`px-4 py-2 bg-white border border-gray-200 rounded-lg transition-all duration-200 ${
@@ -151,45 +127,44 @@ export default function CardContent({
                               sendDepartmentMessage(department);
                             }}
                             disabled={isDepartmentLocked}
-                            >
-                              {department.trim()}
+                          >
+                            {department.trim()}
                           </button>
                         ))}
                       </div>
                     </div>
                   ) : (
-                    
-
                     <div className="markdown-content">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw]}
                         components={{
-                          a: ({ href, children }) => {
+                          a: ({ href = "", children }) => {
                             if (href === "#") {
                               return (
                                 <span
                                   className="privacy-policy-link text-red-700 underline cursor-pointer"
                                   onClick={() => setIsPolicyModalOpen(true)}
+                                  aria-label="Open Privacy Policy"
                                 >
                                   {children}
                                 </span>
                               );
                             }
-  
-                            const citation = Array.isArray(message.citations) 
+
+                            const citation = Array.isArray(message.citations)
                               ? message.citations.find((cit) => cit.url === href)
                               : undefined;
-                            const displayName =
-                              citation?.title || 
-                              (href ? getDocumentName(href) : "Document");
-  
+
+                            const displayName = citation?.title || getDocumentName(href);
+
                             return (
                               <a
                                 href={href}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline inline-flex items-center relative group"
+                                aria-label={`Open document ${displayName}`}
                               >
                                 🔗
                                 <span className="absolute hidden group-hover:block bottom-full mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
@@ -198,18 +173,10 @@ export default function CardContent({
                               </a>
                             );
                           },
-                          ul: ({ children }) => (
-                            <ul className="list-disc ml-5">{children}</ul>
-                          ),
-                          ol: ({ children }) => (
-                            <ol className="list-decimal ml-5">{children}</ol>
-                          ),
-                          li: ({ children }) => (
-                            <li className="mb-1">{children}</li>
-                          ),
-                          p: ({ children }) => (
-                            <p className="mb-2 last:mb-0">{children}</p>
-                          ),
+                          ul: ({ children }) => <ul className="list-disc ml-5">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal ml-5">{children}</ol>,
+                          li: ({ children }) => <li className="mb-1">{children}</li>,
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
                         }}
                       >
                         {message.content}
@@ -217,12 +184,10 @@ export default function CardContent({
                     </div>
                   )}
                 </div>
-                
-                {hasReferences && Array.isArray(message.citations) && (
+
+                {referencesExist && Array.isArray(message.citations) && (
                   <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-md referenced-docs">
-                    <div className="text-xs font-medium text-gray-700 mb-2">
-                      {t.referencedDocuments}
-                    </div>
+                    <div className="text-xs font-medium text-gray-700 mb-2">{t.referencedDocuments}</div>
                     <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-2">
                       {message.citations.map((citation, idx) => (
                         <a
@@ -231,6 +196,7 @@ export default function CardContent({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs flex items-center hover:bg-blue-50 p-2 rounded transition-colors border border-gray-100"
+                          aria-label={`Reference ${idx + 1}`}
                         >
                           <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full text-xs font-medium mr-2">
                             {idx + 1}
@@ -267,6 +233,7 @@ export default function CardContent({
   );
 }
 
+export default memo(CardContent);
 
 
 
