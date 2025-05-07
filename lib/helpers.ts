@@ -114,27 +114,6 @@ export const createChatbotAPIRequest = (
   });
 };
 
-export const replaceDocsWithAnchors = (content: string, citations: Citation[] = []): string => {
-  if (!content) return '';
-
-  let processedContent = content.replace(
-    /(https?:\/\/[^\s]+)/g,
-    (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">🔗</a>`
-  );
-
-  citations.forEach((citation, i) => {
-    const docNum = i + 1;
-    const docRegex = new RegExp(`\\[doc${docNum}\\]`, "gi");
-    processedContent = processedContent.replace(docRegex, 
-      citation?.url 
-        ? `<a href="${citation.url}" target="_blank" rel="noopener noreferrer" class="doc-link">🔗</a>`
-        : ''
-    );
-  });
-
-  return processedContent.replace(/\[doc\d+\]:\s*.*?\.\w+|\[doc\d+\]/g, "");
-};
-
 export const processStreamResponse = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
   currentMessages: Message[],
