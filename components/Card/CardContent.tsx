@@ -118,7 +118,7 @@ export default function CardContent({
                     {formatTimestamp(message.timestamp)}
                   </span>
                 </div>
-
+  
                 <div
                   className={`px-4 py-2 rounded-lg shadow-sm text-sm leading-relaxed border border-gray-200 w-full ${
                     isUserMessage
@@ -151,90 +151,73 @@ export default function CardContent({
                               sendDepartmentMessage(department);
                             }}
                             disabled={isDepartmentLocked}
-                            type="button"
-                          >
-                            {department.trim()}
+                            >
+                              {department.trim()}
                           </button>
                         ))}
                       </div>
                     </div>
                   ) : (
+                    
+
                     <div className="markdown-content">
-                      {message.isStreaming && !message.content ? (
-                        <div className="flex space-x-1">
-                          <span className="animate-bounce">.</span>
-                          <span
-                            className="animate-bounce"
-                            style={{ animationDelay: "150ms" }}
-                          >
-                            .
-                          </span>
-                          <span
-                            className="animate-bounce"
-                            style={{ animationDelay: "300ms" }}
-                          >
-                            .
-                          </span>
-                        </div>
-                      ) : (
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          rehypePlugins={[rehypeRaw]}
-                          components={{
-                            a: ({ href, children }) => {
-                              if (href === "#") {
-                                return (
-                                  <span
-                                    className="privacy-policy-link text-red-700 underline cursor-pointer"
-                                    onClick={() => setIsPolicyModalOpen(true)}
-                                  >
-                                    {children}
-                                  </span>
-                                );
-                              }
-
-                              const citation = Array.isArray(message.citations) 
-                                ? message.citations.find((cit) => cit.url === href)
-                                : undefined;
-                              const displayName =
-                                citation?.title || 
-                                (href ? getDocumentName(href) : "Document");
-
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          a: ({ href, children }) => {
+                            if (href === "#") {
                               return (
-                                <a
-                                  href={href}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline inline-flex items-center relative group"
+                                <span
+                                  className="privacy-policy-link text-red-700 underline cursor-pointer"
+                                  onClick={() => setIsPolicyModalOpen(true)}
                                 >
-                                  🔗
-                                  <span className="absolute hidden group-hover:block bottom-full mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
-                                    {displayName}
-                                  </span>
-                                </a>
+                                  {children}
+                                </span>
                               );
-                            },
-                            ul: ({ children }) => (
-                              <ul className="list-disc ml-5">{children}</ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="list-decimal ml-5">{children}</ol>
-                            ),
-                            li: ({ children }) => (
-                              <li className="mb-1">{children}</li>
-                            ),
-                            p: ({ children }) => (
-                              <p className="mb-2 last:mb-0">{children}</p>
-                            ),
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                      )}
+                            }
+  
+                            const citation = Array.isArray(message.citations) 
+                              ? message.citations.find((cit) => cit.url === href)
+                              : undefined;
+                            const displayName =
+                              citation?.title || 
+                              (href ? getDocumentName(href) : "Document");
+  
+                            return (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline inline-flex items-center relative group"
+                              >
+                                🔗
+                                <span className="absolute hidden group-hover:block bottom-full mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded whitespace-nowrap">
+                                  {displayName}
+                                </span>
+                              </a>
+                            );
+                          },
+                          ul: ({ children }) => (
+                            <ul className="list-disc ml-5">{children}</ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="list-decimal ml-5">{children}</ol>
+                          ),
+                          li: ({ children }) => (
+                            <li className="mb-1">{children}</li>
+                          ),
+                          p: ({ children }) => (
+                            <p className="mb-2 last:mb-0">{children}</p>
+                          ),
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
                     </div>
                   )}
                 </div>
-
+                
                 {hasReferences && Array.isArray(message.citations) && (
                   <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-md referenced-docs">
                     <div className="text-xs font-medium text-gray-700 mb-2">
@@ -283,13 +266,6 @@ export default function CardContent({
     </ScrollArea>
   );
 }
-
-
-
-
-
-
-
 
 
 
