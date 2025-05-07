@@ -4,42 +4,37 @@ import jwt from "jsonwebtoken";
 export const useTokenManagement = () => {
   const JWT_KEY = process.env.NEXT_PUBLIC_JWT_KEY as string;
   const [isInitialized, setIsInitialized] = useState(false);
-  
-  
-  const getStorageItem = useCallback((key: string): string => {
+
+  const getToken = useCallback((key: string) => {
     return typeof window !== "undefined" ? localStorage.getItem(key) || "" : "";
   }, []);
 
-  const setStorageItem = useCallback((key: string, value: string): void => {
+  const setToken = useCallback((key: string, value: string) => {
     if (typeof window !== "undefined") {
       localStorage.setItem(key, value);
     }
   }, []);
 
-  const getAuthToken = useCallback(() => getStorageItem("x-auth-token"), [getStorageItem]);
-  const setAuthToken = useCallback((token: string) => setStorageItem("x-auth-token", token), [setStorageItem]);
-  const getVerificationToken = useCallback(() => getStorageItem("verification-token"), [getStorageItem]);
-  const setVerificationToken = useCallback((token: string) => setStorageItem("verification-token", token), [setStorageItem]);
+  const getAuthToken = useCallback(() => getToken("x-auth-token"), [getToken]);
+  const setAuthToken = useCallback((token: string) => setToken("x-auth-token", token), [setToken]);
+  const getVerificationToken = useCallback(() => getToken("verification-token"), [getToken]);
+  const setVerificationToken = useCallback((token: string) => setToken("verification-token", token), [setToken]);
 
-  
   const generateTokens = useCallback(async () => {
     try {
       const nowInSeconds = Math.floor(Date.now() / 1000);
-      const authToken = jwt.sign(
-        {
-          property: "Punjab Government",
-          iat: nowInSeconds - 100,
-        },
-        JWT_KEY,
-        {
-          expiresIn: "1h",
-        }
-      );
-      const verificationToken = `verification-token-${Date.now()}`;
       
+      const authToken = jwt.sign(
+        { property: "Punjab Government", iat: nowInSeconds - 100 },
+        JWT_KEY,
+        { expiresIn: "1h" }
+      );
+
+      const verificationToken = `verification-token-${Date.now()}`;
+
       setAuthToken(authToken);
       setVerificationToken(verificationToken);
-      
+
       return { authToken, verificationToken };
     } catch (error) {
       console.error("Error generating tokens:", error);
@@ -47,67 +42,41 @@ export const useTokenManagement = () => {
     }
   }, [JWT_KEY, setAuthToken, setVerificationToken]);
 
-
   const isTokenExpired = useCallback((token: string) => {
     if (!token) return true;
-    
     try {
-      if (typeof window !== "undefined") {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(window.atob(base64));
-        return payload.exp <= Date.now() / 1000;
-      } else {
-        const decoded = jwt.verify(token, JWT_KEY) as { exp: number };
-        return decoded.exp < (Date.now() / 1000) + 300; // 5-minute buffer
+     
+      const decoded = jwt.verify(token, JWT_KEY);
+      return !decoded || typeof decoded !== 'object';
+    } catch (error: unknown) {
+     
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'TokenExpiredError') {
+        return true;
       }
-    } catch (error) {
       console.error("Error verifying token:", error);
-      return true;
+      return true; 
     }
   }, [JWT_KEY]);
-
-
-  const refreshTokens = useCallback(async () => {
-    return await generateTokens();
-  }, [generateTokens]);
-
   
   const ensureValidTokens = useCallback(async () => {
-    if (typeof window !== "undefined" && !isInitialized) {
-      await new Promise<void>(resolve => {
-        const checkInitialized = () => {
-          if (isInitialized) {
-            resolve();
-          } else {
-            setTimeout(checkInitialized, 100);
-          }
-        };
-        checkInitialized();
-      });
-    }
-    
-  
     const authToken = getAuthToken();
     if (!authToken || isTokenExpired(authToken)) {
-      return await refreshTokens();
+      return await generateTokens();
     }
-    
-    return {
+    return { 
       authToken,
-      verificationToken: getVerificationToken(),
+      verificationToken: getVerificationToken()
     };
-  }, [getAuthToken, getVerificationToken, isTokenExpired, refreshTokens, isInitialized]);
- 
- 
+  }, [getAuthToken, getVerificationToken, isTokenExpired, generateTokens]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    
+
     const initialize = async () => {
       try {
         const authToken = getAuthToken();
         if (!authToken || isTokenExpired(authToken)) {
-          await refreshTokens();
+          await generateTokens();
         }
       } catch (err) {
         console.error("Failed to initialize tokens:", err);
@@ -115,21 +84,15 @@ export const useTokenManagement = () => {
         setIsInitialized(true);
       }
     };
-    
+
     initialize();
-  }, [getAuthToken, isTokenExpired, refreshTokens]);
+  }, [getAuthToken, isTokenExpired, generateTokens]);
 
   return {
     ensureValidTokens,
-    isTokenExpired,
     isInitialized,
-    refreshTokens
   };
 };
-
-
-
-
 
 
 
