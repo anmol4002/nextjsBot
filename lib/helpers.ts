@@ -135,7 +135,7 @@ export const processStreamResponse = async (
       updatedMessages.push({
         role: "assistant",
         content:
-          '<div class="flex space-x-2 items-center"><span class="animate-bounce text-2xl">•</span><span class="animate-bounce text-2xl" style="animation-delay:150ms">•</span><span class="animate-bounce text-2xl" style="animation-delay:300ms">•</span></div>',
+        '<div class="flex space-x-2"><span class="animate-bounce ">•</span><span class="animate-bounce" style="animation-delay:150ms">•</span><span class="animate-bounce" style="animation-delay:300ms">•</span></div>',
         rawContent: "",
         timestamp: new Date(),
         citations: [],
