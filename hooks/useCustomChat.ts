@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { DEPARTMENT_MAPPING } from "@/lib/mapping";
 import { useTokenManagement } from "@/lib/auth";
 import {
   Language,
@@ -36,10 +35,9 @@ export const useCustomChat = (language = "en") => {
   const [isLanguageChanging, setIsLanguageChanging] = useState(false);
 
   const t = getTranslations(currentLanguage);
-  const deptMapping =
-    DEPARTMENT_MAPPING[currentLanguage === "auto" ? "en" : currentLanguage] ||
-    DEPARTMENT_MAPPING.en;
+ 
 
+  // Handling language change
   useEffect(() => {
     if (language !== currentLanguage && !isLanguageChanging) {
       setIsLanguageChanging(true);
@@ -58,6 +56,7 @@ export const useCustomChat = (language = "en") => {
     }
   }, [language,currentLanguage, isLanguageChanging]);
 
+  // Auto-scrolling on new messages
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.isStreaming) {
@@ -138,6 +137,8 @@ export const useCustomChat = (language = "en") => {
     setError(null);
     setCurrentDepartment(DEFAULT_DEPARTMENT);
     setIsDepartmentLocked(false);
+
+    // Creating initial messages with the current language
     setMessages(getInitialMessages(currentLanguage));
   }, [currentLanguage]);
 
@@ -239,9 +240,10 @@ export const useCustomChat = (language = "en") => {
         }
       };
 
+      // Handling department selection
       if (!isDepartmentLocked) {
         if (
-          isDepartmentSelectionMessage(content, currentLanguage, deptMapping)
+          isDepartmentSelectionMessage(content, currentLanguage)
         ) {
           await safeApiCall(async () => {
             await sendDepartmentMessage(content);
@@ -251,6 +253,7 @@ export const useCustomChat = (language = "en") => {
         }
       }
 
+      // Handling normal messages
       await safeApiCall(async () => {
         const newMessages = updateMessagesWithHistoryLimit([
           ...messages,
@@ -275,6 +278,8 @@ export const useCustomChat = (language = "en") => {
         if (!reader) {
           throw new Error("Could not get response reader");
         }
+
+        // Waiting for the streaming to complete
         await processStreamResponse(
           reader,
           newMessages,
@@ -290,7 +295,7 @@ export const useCustomChat = (language = "en") => {
       currentDepartment,
       isDepartmentLocked,
       t,
-      deptMapping,
+
       callChatbotAPI,
       sendDepartmentMessage,
       currentLanguage,
@@ -318,6 +323,5 @@ export const useCustomChat = (language = "en") => {
 };
 
 export default useCustomChat;
-
 
 
