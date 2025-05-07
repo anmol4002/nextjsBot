@@ -5,87 +5,57 @@ import {
   Message, 
   Citation, 
   ScrollOptions,
-  DEFAULT_DEPARTMENT, 
   DepartmentCode ,
   updateMessagesWithHistoryLimit,
   getSystemMessage
 } from "@/lib/utils";
 
+const getLangKey = (language: Language): keyof typeof TRANSLATIONS => {
+  return language === "auto" ? "en" : language;
+};
 
-export const getDepartmentCode = (departmentName: string, currentLanguage: Language): DepartmentCode => {
-  const langKey = currentLanguage === "auto" ? "en" : currentLanguage;
-  const deptMapping = DEPARTMENT_MAPPING[langKey] || DEPARTMENT_MAPPING.en;
-
-
-  if (Object.prototype.hasOwnProperty.call(deptMapping, departmentName)) {
-    return deptMapping[departmentName as keyof typeof deptMapping];
-  }
-  for (const lang of ["en", "pa", "hi"] as const) {
-    const mapping = DEPARTMENT_MAPPING[lang];
-    if (Object.prototype.hasOwnProperty.call(mapping, departmentName)) {
-      return mapping[departmentName as keyof typeof mapping];
-    }
-  }
-
-  for (const lang of ["en", "pa", "hi"] as const) {
-    const mapping = DEPARTMENT_MAPPING[lang];
-    for (const [, value] of Object.entries(mapping)) {
-      if (value === departmentName) {
-        return value;
-      }
-    }
-  }
-
-  return DEFAULT_DEPARTMENT;
+export const getDepartmentCode = (
+  departmentName: string,
+  currentLanguage: Language
+): DepartmentCode => {
+  const deptMapping = DEPARTMENT_MAPPING[getLangKey(currentLanguage)];
+  return deptMapping[departmentName as keyof typeof deptMapping] || 'punchatbotindex';
 };
 
 export const getTranslations = (language: Language) => {
-  const langKey = language === "auto" ? "en" : language;
-  return TRANSLATIONS[langKey as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+  return TRANSLATIONS[getLangKey(language)];
 };
 
 export const isDepartmentSelectionMessage = (
   content: string,
-  currentLanguage: Language,
-  deptMapping: Record<string, DepartmentCode>
+  currentLanguage: Language
 ): boolean => {
-  const potentialDepartmentCode = getDepartmentCode(content, currentLanguage);
-  return (
-    Object.values(deptMapping).includes(potentialDepartmentCode) ||
-    Object.keys(deptMapping).some(
-      (dept) =>
-        dept.toLowerCase().includes(content.toLowerCase()) ||
-        content.toLowerCase().includes(dept.toLowerCase())
-    )
-  );
+  return TRANSLATIONS[getLangKey(currentLanguage)].departmentOptions.includes(content);
 };
 
 export const createDepartmentOptionsMessage = (currentLanguage: Language) => {
-  const langKey = currentLanguage === "auto" ? "en" : currentLanguage;
-  const langTranslations =
-    TRANSLATIONS[langKey as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
-  return langTranslations.selectDepartment;
+  return TRANSLATIONS[getLangKey(currentLanguage)].selectDepartment;
 };
 
 export const getInitialMessages = (language: Language): Message[] => {
-  const langKey = language === "auto" ? "en" : language;
-  const langTranslations = TRANSLATIONS[langKey] || TRANSLATIONS.en;
+  const { disclaimer, privacyPolicy, welcomeMessage, selectDepartment } = 
+    TRANSLATIONS[getLangKey(language)];
 
   return [
     {
-      role: "assistant" as const,
-      content: `${langTranslations.disclaimer}\n<a href='#' class='privacy-policy-link text-red-700 underline'>${langTranslations.privacyPolicy}</a>`,
+      role: "assistant",
+      content: `${disclaimer}\n<a href='#' class='privacy-policy-link text-red-700 underline'>${privacyPolicy}</a>`,
       timestamp: new Date(),
       containsHtml: true,
     },
     {
-      role: "assistant" as const,
-      content: langTranslations.welcomeMessage,
+      role: "assistant",
+      content: welcomeMessage,
       timestamp: new Date(),
     },
     {
-      role: "assistant" as const,
-      content: langTranslations.selectDepartment,
+      role: "assistant",
+      content: selectDepartment,
       timestamp: new Date(),
     },
   ];
@@ -144,63 +114,26 @@ export const createChatbotAPIRequest = (
   });
 };
 
-
 export const replaceDocsWithAnchors = (content: string, citations: Citation[] = []): string => {
-
   if (!content) return '';
-
-  const createLink = (url: string | undefined, title: string, defaultText: string): string => {
-    const displayText = title || defaultText;
-    
-    return url
-      ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="doc-link" 
-          style="color: #0066cc; text-decoration: underline; font-weight: bold;">
-          [${displayText}]</a>`
-      : `<span class="doc-reference" title="Document not available" 
-          style="color: #999; cursor: not-allowed;">[${displayText}]</span>`;
-  };
 
   let processedContent = content.replace(
     /(https?:\/\/[^\s]+)/g,
-    (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline">Link</a>`
+    (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">🔗</a>`
   );
 
   citations.forEach((citation, i) => {
     const docNum = i + 1;
     const docRegex = new RegExp(`\\[doc${docNum}\\]`, "gi");
-    const defaultText = `Document ${docNum}`;
-    
-    processedContent = processedContent.replace(
-      docRegex, 
-      createLink(citation.url, citation.title || '', defaultText)
+    processedContent = processedContent.replace(docRegex, 
+      citation?.url 
+        ? `<a href="${citation.url}" target="_blank" rel="noopener noreferrer" class="doc-link">🔗</a>`
+        : ''
     );
   });
 
-  const pdfRegex = /\[([^\]]+\.pdf)\]/gi;
-  let match;
-  
-  while ((match = pdfRegex.exec(processedContent)) !== null) {
-    const pdfName = match[1];
-    const index = match.index;
-    const fullMatch = match[0];
-  
-    const citation = citations.find(c => 
-      c.title?.toLowerCase() === pdfName.toLowerCase() || 
-      c.url?.toLowerCase().endsWith(pdfName.toLowerCase())
-    );
-    
-    const replacement = createLink(citation?.url, citation?.title || '', pdfName);
-   
-    processedContent = 
-      processedContent.substring(0, index) + 
-      replacement + 
-      processedContent.substring(index + fullMatch.length);
-  
-    pdfRegex.lastIndex = index + replacement.length;
-  }
   return processedContent.replace(/\[doc\d+\]:\s*.*?\.\w+|\[doc\d+\]/g, "");
 };
-
 
 export const processStreamResponse = async (
   reader: ReadableStreamDefaultReader<Uint8Array>,
@@ -371,6 +304,10 @@ export const processStreamResponse = async (
     throw error;
   }
 };
+
+
+
+
 
 
 
