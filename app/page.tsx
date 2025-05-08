@@ -378,13 +378,25 @@ export default function Chat() {
           )}
 
           {isChatOpen && (
-            <div
+            // <div
+            //   className={`fixed z-50 ${
+            //     isMaximized
+            //       ? "inset-0 p-0 animate-fadeIn"
+            //       : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
+            //   }`}
+            //   style={{
+            //     borderRadius: isMaximized ? "0" : "12px",
+            //   }}
+            // >
+      <div
               className={`fixed z-50 ${
                 isMaximized
-                  ? "inset-0 p-0 animate-fadeIn"
+                  ? "inset-0 bottom-0 p-0 animate-fadeIn"
                   : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
               }`}
               style={{
+                width: isMaximized ? "100%" : "95%",
+                height: isMaximized ? "100vh" : "auto",
                 borderRadius: isMaximized ? "0" : "12px",
               }}
             >
