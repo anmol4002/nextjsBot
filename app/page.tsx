@@ -381,9 +381,12 @@ export default function Chat() {
             <div
               className={`fixed z-50 ${
                 isMaximized
-                  ? "inset-0 p-0 animate-fadeIn rounded-none"
+                  ? "inset-0 p-0 animate-fadeIn"
                   : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
               }`}
+              style={{
+                borderRadius: isMaximized ? "0" : "12px",
+              }}
             >
               <Card className="border-none shadow-xl bg-white overflow-hidden transition-all duration-300 ease-out">
                 {showQRImage ? (
