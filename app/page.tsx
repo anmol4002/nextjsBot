@@ -120,9 +120,10 @@ export default function Chat() {
     return () => window.removeEventListener("message", handleParentMessage);
   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape" && (isChatOpen || showIcons)) {
+        if (event.key === "Escape") {
+          setIsPolicyModalOpen(false);
           setIsChatOpen(false);
           setShowIcons(false);
           setIsMaximized(false);
@@ -130,12 +131,11 @@ export default function Chat() {
           setIsLanguageDropdownOpen(false);
         }
       };
-  
       window.addEventListener("keydown", handleKeyDown);
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
       };
-    }, [isChatOpen, showIcons]);
+    }, []);
   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
