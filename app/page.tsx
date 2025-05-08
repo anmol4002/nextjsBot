@@ -381,7 +381,7 @@ export default function Chat() {
             <div
               className={`fixed z-50 ${
                 isMaximized
-                  ? "inset-0 bottom-0 p-0 animate-fadeIn"
+                  ? "inset-0 p-0 animate-fadeIn rounded-none"
                   : "bottom-20 right-4 w-[95%] max-w-[500px] animate-scaleIn"
               }`}
             >
