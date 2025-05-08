@@ -121,6 +121,23 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape" && (isChatOpen || showIcons)) {
+          setIsChatOpen(false);
+          setShowIcons(false);
+          setIsMaximized(false);
+          setShowQRImage(false);
+          setIsLanguageDropdownOpen(false);
+        }
+      };
+  
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [isChatOpen, showIcons]);
+  
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isPolicyModalOpen || !!toast) return;
 
